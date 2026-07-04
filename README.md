@@ -2,6 +2,11 @@
 A Home Assistant integration to control a Yale Doorman lock via the Yale Smart Hub.
 So far only tested on a single Yale Doorman V2N.
 
+> **This is a fork** of [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub),
+> which remains the original project and its owner. This fork exists to carry debug
+> logging and bug fixes (see `CHANGELOG.md`) while they're not yet in upstream.
+> Consider starring/supporting the original repo if this integration is useful to you.
+
 <img style="width:300px;" src="web/images/logo_1024.png" alt="Doorman" />
 
 # Debug logging
