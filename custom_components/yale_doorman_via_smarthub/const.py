@@ -1,7 +1,7 @@
 NAME = "Yale Doorman via Smart Hub"
 DOMAIN = "yale_doorman_via_smarthub"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.12"
+VERSION = "0.0.13"
 ISSUE_URL = "https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub/issues"
 MANUFACTURER = "Yale"
 MODEL = "Doorman"

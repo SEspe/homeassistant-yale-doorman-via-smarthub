@@ -16,16 +16,15 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 async def async_setup_entry(hass, entry, async_add_entities):
     try:
         coordinator = hass.data[DOMAIN][entry.entry_id]
-        status = await coordinator.api.async_status()
         locks = []
         idx = 0
-        for device_status in status["data"]["device_status"]:
+        for device_status in coordinator.data["data"]["device_status"]:
             lock = YaleDoormanViaSmarthubLock(coordinator, entry, idx)
             locks.append(lock)
             idx = idx + 1
         async_add_entities(locks, True)
     except Exception as exception:
-        _LOGGER.error(exception)
+        _LOGGER.error("Failed to set up lock entities: %s", exception, exc_info=True)
 
 class YaleDoormanViaSmarthubLock(YaleDoormanViaSmarthubEntity, LockEntity):
     
@@ -44,7 +43,7 @@ class YaleDoormanViaSmarthubLock(YaleDoormanViaSmarthubEntity, LockEntity):
             _LOGGER.info("Lock failed")
     
     async def async_unlock(self, **kwargs):
-        pincode = self.config_entry.data.get(CONF_PINCODE)
+        pincode = kwargs.get("code") or self.config_entry.data.get(CONF_PINCODE)
         success = await self.coordinator.api.async_unlock(self.unique_id,self._area,self._zone,pincode)
         if success:
             door_status = 14
@@ -94,8 +93,8 @@ class YaleDoormanViaSmarthubLock(YaleDoormanViaSmarthubEntity, LockEntity):
                 return None
         except Exception as exception:
             pass
-        
-        return "%d{6}"
+
+        return r"^\d{6}$"
     
     @property
     def icon(self):

@@ -110,21 +110,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             event_type_map = translations.get("responses", {}).get("event_type", {})
 
             formatted_events = []
-            for event in log_events:
+            for event in all_events:
                 event_id = str(event.get("event_type"))
                 event_area = event.get("area")
-                event_zone = event.get("zone") 
+                event_zone = event.get("zone")
                 device_key = None
-                device_name = "System" 
+                device_name = "System"
 
                 try:
                     area_int = int(event_area)
                     zone_int = int(event_zone)
-                    
+
                     if area_int > 0:
                         device_key = (area_int, zone_int)
                         device_name = device_map.get(
-                            device_key, 
+                            device_key,
                             f"Unknown Device (A:{area_int}, Z:{zone_int})"
                         )
                 except (TypeError, ValueError):
@@ -132,7 +132,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
                 translated_event = event_type_map.get(event_id, f"Unknown event {event_id}")
 
-                if event_id in range(1301,1399) or event_id in ["1602"]:
+                try:
+                    event_id_int = int(event_id)
+                except ValueError:
+                    event_id_int = None
+
+                if (event_id_int is not None and 1301 <= event_id_int <= 1398) or event_id in ["1602"]:
                     formatted_events.append({
                         "Time": event.get("time", "N/A"),
                         "Event": translated_event,
