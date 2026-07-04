@@ -11,7 +11,9 @@ class YaleDoormanViaSmarthubEntity(CoordinatorEntity):
     def __init__(self, coordinator, config_entry):
         super().__init__(coordinator)
         self.config_entry = config_entry
-    
+        self.old_unique_id = None
+        self.old_name = None
+
     @property
     def unique_id(self):
         try:
@@ -21,7 +23,7 @@ class YaleDoormanViaSmarthubEntity(CoordinatorEntity):
             self.old_unique_id = self._unique_id
         except Exception as exception:
             self._unique_id = self.old_unique_id
-        
+
         return self._unique_id
     
     @property
@@ -40,5 +42,5 @@ class YaleDoormanViaSmarthubEntity(CoordinatorEntity):
             self.old_name = name
         except Exception as exception:
             name = self.old_name
-        
+
         return name

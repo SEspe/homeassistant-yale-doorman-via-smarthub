@@ -1,4 +1,5 @@
 from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.helpers.entity_registry import RegistryEntryDisabler
 
 from .const import (
     BINARY_SENSOR_DEVICE_CLASS,
@@ -16,16 +17,15 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 async def async_setup_entry(hass, entry, async_add_entities):
     try:
         coordinator = hass.data[DOMAIN][entry.entry_id]
-        status = await coordinator.api.async_status()
         doors = []
         idx = 0
-        for device_status in status["data"]["device_status"]:
+        for device_status in coordinator.data["data"]["device_status"]:
             door = YaleDoormanViaSmarthubBinarySensor(coordinator, entry, idx)
             doors.append(door)
             idx = idx + 1
         async_add_entities(doors, True)
     except Exception as exception:
-        _LOGGER.error(exception)
+        _LOGGER.error("Failed to set up binary sensor entities: %s", exception, exc_info=True)
 
 class YaleDoormanViaSmarthubBinarySensor(YaleDoormanViaSmarthubEntity, BinarySensorEntity):
     def __init__(self, coordinator, config_entry, idx):
@@ -36,7 +36,7 @@ class YaleDoormanViaSmarthubBinarySensor(YaleDoormanViaSmarthubEntity, BinarySen
     def disabled_by(self):
         if self.config_entry.data.get(CONF_ENABLE_BINARY_SENSOR):
             return None
-        return "integration"
+        return RegistryEntryDisabler.INTEGRATION
     
     @property
     def device_class(self):
