@@ -182,10 +182,20 @@ class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         try:
             status = await self.api.async_status()
+            if status is None:
+                _LOGGER.warning(
+                    "Received no data from Yale smarthub - see preceding log lines "
+                    "for the underlying cause (login/auth/network). Marking data as unavailable."
+                )
+                raise UpdateFailed("No data returned from Yale smarthub")
+            device_count = len(status.get("data", {}).get("device_status", []))
+            _LOGGER.debug("Coordinator update succeeded, %s device(s) reported", device_count)
             return status
+        except UpdateFailed:
+            raise
         except Exception as exception:
-            _LOGGER.info(exception)
-            raise UpdateFailed() from exception
+            _LOGGER.error("Coordinator update failed: %s", exception, exc_info=True)
+            raise UpdateFailed(str(exception)) from exception
     
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = hass.data[DOMAIN][entry.entry_id]
