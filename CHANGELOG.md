@@ -3,8 +3,13 @@
 All notable changes to this fork are documented here. Upstream is
 [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub).
 
-## 0.0.9 (this fork)
+## 0.0.12 (this fork)
 Base: upstream `main` at commit `6d883a1` (manifest version `0.0.8`).
+
+Versioned `0.0.12` instead of `0.0.9` because GitHub's fork operation copies all of
+upstream's existing tags (`v0.0.1`-`v0.0.11`) along with the repo, so those numbers
+were already taken by unrelated upstream commits on this fork. `0.0.12` is the first
+number with no collision.
 
 ### Added
 - Debug-level logging throughout `api.py` for every request: method, URL, HTTP status
