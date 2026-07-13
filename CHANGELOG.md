@@ -3,6 +3,21 @@
 All notable changes to this fork are documented here. Upstream is
 [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub).
 
+## 0.0.14 (this fork)
+Fix the integration failing to start on recent Home Assistant / Python 3.14.
+
+### Fixed
+- Authentication read `hub.login` with a synchronous `open()` + `pickle.load()`
+  directly on the event loop. Recent Home Assistant traps blocking I/O on the loop,
+  so the first coordinator refresh aborted, `last_update_success` was `False`, and
+  `async_setup_entry` raised `ConfigEntryNotReady` - meaning **no** platform loaded
+  (binary sensor and lock both failed to start). The file is now read via
+  `hass.async_add_executor_job` and cached (it never changes at runtime, so this also
+  removes a disk read from every 30-second poll). The API client now takes `hass`.
+- The `download_yale_event_log` service read its translations file with a blocking
+  `open()` on the event loop as well - it would have hit the same trap whenever the
+  service ran. Moved to an executor.
+
 ## 0.0.13 (this fork)
 Follow-up bug-fix pass over the whole integration.
 

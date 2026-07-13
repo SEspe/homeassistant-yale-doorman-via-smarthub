@@ -33,7 +33,7 @@ class YaleDoormanViaSmarthubFlowHandler(config_entries.ConfigFlow, domain=DOMAIN
             
             try:
                 session = async_create_clientsession(self.hass)
-                client = YaleDoormanViaSmarthubApiClient(user_input[CONF_USERNAME], user_input[CONF_PASSWORD], session)
+                client = YaleDoormanViaSmarthubApiClient(self.hass, user_input[CONF_USERNAME], user_input[CONF_PASSWORD], session)
                 result = await client.async_login()
                 if result:
                     return self.async_create_entry(
