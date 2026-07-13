@@ -49,7 +49,7 @@ class YaleDoormanViaSmarthubFlowHandler(config_entries.ConfigFlow, domain=DOMAIN
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return YaleDoormanViaSmarthubOptionsFlowHandler(config_entry)
+        return YaleDoormanViaSmarthubOptionsFlowHandler()
 
     async def _show_config_form(self, user_input):
         return self.async_show_form(
@@ -66,35 +66,35 @@ class YaleDoormanViaSmarthubFlowHandler(config_entries.ConfigFlow, domain=DOMAIN
         )
 
 class YaleDoormanViaSmarthubOptionsFlowHandler(config_entries.OptionsFlow):
+    # Don't store config_entry ourselves - modern Home Assistant provides it as a
+    # read-only property (self.config_entry); assigning to it raises and the options
+    # flow fails to load with a 500.
 
-    def __init__(self, config_entry):
-        self.config_entry = config_entry
-        self.options = dict(config_entry.options)
-    
     async def async_step_init(self, user_input=None):
         return await self.async_step_user()
-    
+
     async def async_step_user(self, user_input=None):
         if user_input is not None:
-            self.options.update(user_input)
-            return await self._update_options()
-        
+            return await self._update_options(user_input)
+
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_USERNAME, default = self.config_entry.data.get(CONF_USERNAME)): str, 
+                    vol.Required(CONF_USERNAME, default = self.config_entry.data.get(CONF_USERNAME)): str,
                     vol.Required(CONF_PASSWORD, default = self.config_entry.data.get(CONF_PASSWORD)): str,
                     vol.Optional(CONF_PINCODE, default = self.config_entry.data.get(CONF_PINCODE)): str,
                     vol.Required(CONF_ENABLE_BINARY_SENSOR, default = self.config_entry.data.get(CONF_ENABLE_BINARY_SENSOR)): bool
                 }
             ),
         )
-    
-    async def _update_options(self):
+
+    async def _update_options(self, user_input):
         # Everything (username/password/pincode/enable_binary_sensor) lives in
-        # config_entry.data, not .options - async_update_entry persists it properly
-        # and the update listener registered in __init__.py reloads the entry.
-        self.hass.config_entries.async_update_entry(self.config_entry, data=self.options)
+        # config_entry.data, not .options - merge the submitted fields over the
+        # existing data. async_update_entry persists it and the update listener
+        # registered in __init__.py reloads the entry.
+        data = {**self.config_entry.data, **user_input}
+        self.hass.config_entries.async_update_entry(self.config_entry, data=data)
 
         return self.async_create_entry(title="", data={})
