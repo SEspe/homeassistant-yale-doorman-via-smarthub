@@ -34,7 +34,7 @@ class YaleDoormanViaSmarthubBinarySensor(YaleDoormanViaSmarthubEntity, BinarySen
     
     @property
     def disabled_by(self):
-        if self.config_entry.data.get(CONF_ENABLE_BINARY_SENSOR):
+        if self.config_entry.data.get(CONF_ENABLE_BINARY_SENSOR, True):
             return None
         return RegistryEntryDisabler.INTEGRATION
     

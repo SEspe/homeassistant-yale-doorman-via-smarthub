@@ -40,7 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     
     username = entry.data.get(CONF_USERNAME)
     password = entry.data.get(CONF_PASSWORD)
-    enable_binary_sensor = entry.data.get(CONF_ENABLE_BINARY_SENSOR)
+    enable_binary_sensor = entry.data.get(CONF_ENABLE_BINARY_SENSOR, True)
     
     session = async_get_clientsession(hass)
     client = YaleDoormanViaSmarthubApiClient(hass, username, password, session)
