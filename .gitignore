@@ -1,0 +1,7 @@
+# Local-only working files, not published to the fork
+CLAUDE.md
+SESSION_NOTES.md
+
+# Python bytecode
+__pycache__/
+*.py[cod]
