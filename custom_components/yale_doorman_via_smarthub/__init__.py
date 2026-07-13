@@ -43,7 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     enable_binary_sensor = entry.data.get(CONF_ENABLE_BINARY_SENSOR)
     
     session = async_get_clientsession(hass)
-    client = YaleDoormanViaSmarthubApiClient(username, password, session)
+    client = YaleDoormanViaSmarthubApiClient(hass, username, password, session)
     
     coordinator = YaleDoormanViaSmarthubDataUpdateCoordinator(hass, client=client)
     await coordinator.async_refresh()
@@ -100,12 +100,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
             path = os.path.join(os.path.dirname(__file__), "translations", f"{language}.json")
             fallback_path = os.path.join(os.path.dirname(__file__), "translations", "en.json")
-            try:
-                with open(path, encoding="utf-8") as f:
-                    translations = json.load(f)
-            except FileNotFoundError:
-                with open(fallback_path, encoding="utf-8") as f:
-                    translations = json.load(f)
+
+            def _load_translations():
+                # Off-loop file read - blocking I/O on the event loop is trapped by HA.
+                try:
+                    with open(path, encoding="utf-8") as f:
+                        return json.load(f)
+                except FileNotFoundError:
+                    with open(fallback_path, encoding="utf-8") as f:
+                        return json.load(f)
+
+            translations = await hass.async_add_executor_job(_load_translations)
             
             event_type_map = translations.get("responses", {}).get("event_type", {})
 

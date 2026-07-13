@@ -18,14 +18,22 @@ HEADERS = {"Content-type": "application/json; charset=UTF-8"}
 
 class YaleDoormanViaSmarthubApiClient:
     def __init__(
-        self, username: str, password: str, session: aiohttp.ClientSession
+        self, hass, username: str, password: str, session: aiohttp.ClientSession
     ) -> None:
+        self._hass = hass
         self._username = username
         self._password = password
         self._session = session
         self._access_token = None
         self._refresh_token = None
         self._token_expires = None
+        self._hub_login = None
+
+    def _load_hub_login(self):
+        """Read and unpickle hub.login. Runs in an executor - never on the loop."""
+        hub_login_path = os.path.join(os.path.dirname(__file__), "hub.login")
+        with open(hub_login_path, 'rb') as f:
+            return pickle.load(f)
 
     async def async_login(self):
         if self._access_token is not None and self._token_expires is not None:
@@ -40,19 +48,24 @@ class YaleDoormanViaSmarthubApiClient:
                 _LOGGER.debug("Cached access token expired at %s, re-authenticating", self._token_expires)
 
         hub_login_path = os.path.join(os.path.dirname(__file__), "hub.login")
-        try:
-            with open(hub_login_path, 'rb') as f:
-                hub_login = pickle.load(f)
-        except FileNotFoundError:
-            _LOGGER.error(
-                "hub.login file not found at %s - cannot authenticate with Yale API",
-                hub_login_path,
-            )
-            return False
-        except Exception as exception:
-            _LOGGER.error("Failed to read hub.login file at %s: %s", hub_login_path, exception)
-            return False
+        if self._hub_login is None:
+            try:
+                # The file read must run off the event loop - Home Assistant
+                # traps blocking I/O on the loop and aborts the coordinator refresh.
+                self._hub_login = await self._hass.async_add_executor_job(
+                    self._load_hub_login
+                )
+            except FileNotFoundError:
+                _LOGGER.error(
+                    "hub.login file not found at %s - cannot authenticate with Yale API",
+                    hub_login_path,
+                )
+                return False
+            except Exception as exception:
+                _LOGGER.error("Failed to read hub.login file at %s: %s", hub_login_path, exception)
+                return False
 
+        hub_login = self._hub_login
         auth = aiohttp.BasicAuth(hub_login["u"], hub_login["p"])
         url = "https://mob.yalehomesystem.co.uk/yapi/o/token/"
         data = {"grant_type": "password", "username": self._username, "password": self._password}
