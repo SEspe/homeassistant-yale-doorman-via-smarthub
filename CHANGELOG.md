@@ -3,6 +3,14 @@
 All notable changes to this fork are documented here. Upstream is
 [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub).
 
+## 0.0.16 (this fork)
+### Changed
+- The door binary sensor now defaults to **enabled**. New installs get it ticked by
+  default in the setup form, and existing entries that predate the option (no
+  `enable_binary_sensor` key stored) now load it too. Entries where it was explicitly
+  turned **off** keep it off. Previously the option defaulted to off, so the binary
+  sensor silently never appeared unless the user knew to enable it in Configure.
+
 ## 0.0.15 (this fork)
 Fix the options ("Configure") dialog failing to open.
 

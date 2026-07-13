@@ -59,7 +59,7 @@ class YaleDoormanViaSmarthubFlowHandler(config_entries.ConfigFlow, domain=DOMAIN
                     vol.Required(CONF_USERNAME): str, 
                     vol.Required(CONF_PASSWORD): str,
                     vol.Optional(CONF_PINCODE): str,
-                    vol.Required(CONF_ENABLE_BINARY_SENSOR, default = False): bool
+                    vol.Required(CONF_ENABLE_BINARY_SENSOR, default = True): bool
                 }
             ),
             errors=self._errors,
@@ -84,7 +84,7 @@ class YaleDoormanViaSmarthubOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(CONF_USERNAME, default = self.config_entry.data.get(CONF_USERNAME)): str,
                     vol.Required(CONF_PASSWORD, default = self.config_entry.data.get(CONF_PASSWORD)): str,
                     vol.Optional(CONF_PINCODE, default = self.config_entry.data.get(CONF_PINCODE)): str,
-                    vol.Required(CONF_ENABLE_BINARY_SENSOR, default = self.config_entry.data.get(CONF_ENABLE_BINARY_SENSOR)): bool
+                    vol.Required(CONF_ENABLE_BINARY_SENSOR, default = self.config_entry.data.get(CONF_ENABLE_BINARY_SENSOR, True)): bool
                 }
             ),
         )
