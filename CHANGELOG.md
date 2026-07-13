@@ -3,6 +3,18 @@
 All notable changes to this fork are documented here. Upstream is
 [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub).
 
+## 0.0.15 (this fork)
+Fix the options ("Configure") dialog failing to open.
+
+### Fixed
+- Opening **Configure** raised `500 Internal Server Error` ("Config flow could not be
+  loaded") on recent Home Assistant. The options flow set `self.config_entry` in its
+  `__init__`, but HA now exposes `config_entry` as a read-only property on `OptionsFlow`
+  and populates it itself - assigning to it raises. Removed the custom `__init__`; the
+  flow now uses the framework-provided `self.config_entry` and merges submitted fields
+  over the existing entry data. Without this the "enable binary sensor" option (and
+  username/password/pincode) could not be changed at all.
+
 ## 0.0.14 (this fork)
 Fix the integration failing to start on recent Home Assistant / Python 3.14.
 
