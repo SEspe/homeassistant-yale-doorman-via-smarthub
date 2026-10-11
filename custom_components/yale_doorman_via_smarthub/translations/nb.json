@@ -76,23 +76,5 @@
                 }
             }
         }
-    },
-    "responses": {
-        "event_type": {
-            "1301": "Yale hub - ingen strømforsyning",
-            "1302": "Yale hub - lavt batteri",
-            "1602": "Periodisk test",
-            "1801": "Låst opp innenfra",
-            "1802": "Låst opp utenfra med brikke eller kode",
-            "1803": "Låst opp med app",
-            "1807": "Automatisk låst",
-            "1812": "Lås lagt til i systemet",
-            "1815": "Låsing mislyktes",
-            "1816": "Låst etter mislykket låsing",
-            "3801": "Låst innenfra",
-            "3802": "Låst med stjerneknappen",
-            "3803": "Låst med app",
-            "3812": "Lås fjernet fra systemet"
-        }
     }
 }

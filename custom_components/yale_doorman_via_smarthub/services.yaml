@@ -15,18 +15,3 @@ download_yale_event_log:
       example: true
       selector:
         boolean:
-  response:
-    description: "Result from request:"
-    fields:
-      event_log_table:
-        description: "Formatted data"
-        selector:
-          object:
-      total_rows_returned:
-        description: "Number of rows"
-        selector:
-          object:
-      pages_fetched:
-        description: "Number of pages fetched"
-        selector:
-          number:

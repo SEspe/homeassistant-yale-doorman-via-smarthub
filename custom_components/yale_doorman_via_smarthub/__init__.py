@@ -32,6 +32,8 @@ from .const import (
 )
 
 SCAN_INTERVAL = timedelta(seconds=30)
+# Upper bound for pages: "*" in the download_yale_event_log service
+MAX_LOG_PAGES = 50
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -92,33 +94,35 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 _LOGGER.error(f"Failed to build device map from coordinator data: {e}")
 
             # Get page count from service call
-            max_pages = int(call.data.get("pages", 1))
+            pages = str(call.data.get("pages", 1)).strip()
+            max_pages = MAX_LOG_PAGES if pages == "*" else int(pages)
             utc = bool(call.data.get("utc", False))
             all_events = []
+            pages_fetched = 0
 
             for page_num in range(1, max_pages + 1):
                 log_data = await coordinator.api.async_get_yale_event_log(page_number=str(page_num), utc=utc)
-                log_events = log_data.get("data", [])
+                log_events = (log_data or {}).get("data") or []
                 _LOGGER.info(f"Downloaded page {str(page_num)} with {len(log_events)} events")
+                if not log_events:
+                    break  # past the last page
+                pages_fetched = page_num
                 all_events.extend(log_events)
 
             language = hass.config.language or "en"
 
-            path = os.path.join(os.path.dirname(__file__), "translations", f"{language}.json")
-            fallback_path = os.path.join(os.path.dirname(__file__), "translations", "en.json")
+            # Event texts per language - kept out of translations/, where hassfest only
+            # allows Home Assistant's own sections
+            path = os.path.join(os.path.dirname(__file__), "event_log_texts.json")
 
-            def _load_translations():
+            def _load_event_texts():
                 # Off-loop file read - blocking I/O on the event loop is trapped by HA.
-                try:
-                    with open(path, encoding="utf-8") as f:
-                        return json.load(f)
-                except FileNotFoundError:
-                    with open(fallback_path, encoding="utf-8") as f:
-                        return json.load(f)
+                with open(path, encoding="utf-8") as f:
+                    return json.load(f)
 
-            translations = await hass.async_add_executor_job(_load_translations)
+            event_texts = await hass.async_add_executor_job(_load_event_texts)
             
-            event_type_map = translations.get("responses", {}).get("event_type", {})
+            event_type_map = event_texts.get(language) or event_texts["en"]
 
             formatted_events = []
             for event in all_events:
@@ -170,7 +174,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             return {
                 "event_log_table": formatted_events,
                 "total_rows_returned": len(formatted_events),
-                "pages_fetched": max_pages
+                "pages_fetched": pages_fetched
 #                "log_data": log_data
             }
 

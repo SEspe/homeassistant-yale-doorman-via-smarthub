@@ -1,0 +1,50 @@
+{
+    "en": {
+        "1301": "Yale hub - no powersupply",
+        "1302": "Yale Hub - battery low",
+        "1602": "Periodical test",
+        "1801": "Unlocked from inside",
+        "1802": "Unlocked from outside, token or keypad",
+        "1803": "Unlocked by app",
+        "1807": "Auto-relocked",
+        "1812": "Lock added to the system",
+        "1815": "Failed to lock",
+        "1816": "Locked after a failed lock",
+        "3801": "Locked from inside",
+        "3802": "Locked with star button",
+        "3803": "Locked with app",
+        "3812": "Lock removed from the system"
+    },
+    "sv": {
+        "1301": "Yale hub - ingen strömförsörjning",
+        "1302": "Yale Hub - låg batterinivå",
+        "1602": "Periodiskt test",
+        "1801": "Upplåst inifrån",
+        "1802": "Upplåst utifrån med tagg eller kod",
+        "1803": "Upplåst av app",
+        "1807": "Automatisk låsning",
+        "1812": "Lås tillagt i systemet",
+        "1815": "Låsning misslyckades",
+        "1816": "Låst efter misslyckad låsning",
+        "3801": "Låst från insidan",
+        "3802": "Låst med *-knappen",
+        "3803": "Låst med appen",
+        "3812": "Lås borttaget från systemet"
+    },
+    "nb": {
+        "1301": "Yale hub - ingen strømforsyning",
+        "1302": "Yale hub - lavt batteri",
+        "1602": "Periodisk test",
+        "1801": "Låst opp innenfra",
+        "1802": "Låst opp utenfra med brikke eller kode",
+        "1803": "Låst opp med app",
+        "1807": "Automatisk låst",
+        "1812": "Lås lagt til i systemet",
+        "1815": "Låsing mislyktes",
+        "1816": "Låst etter mislykket låsing",
+        "3801": "Låst innenfra",
+        "3802": "Låst med stjerneknappen",
+        "3803": "Låst med app",
+        "3812": "Lås fjernet fra systemet"
+    }
+}

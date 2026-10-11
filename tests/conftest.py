@@ -85,7 +85,10 @@ def mock_yale(
     log=LOG_BASELINE,
     expires_in=3600,
 ):
-    """(Re)register the faked Yale API. Also clears the recorded calls."""
+    """(Re)register the faked Yale API. Also clears the recorded calls.
+
+    log=None leaves the event log unregistered, for tests that register pages themselves.
+    """
     aioclient_mock.clear_requests()
     if token_status == 200:
         aioclient_mock.post(
@@ -97,7 +100,8 @@ def mock_yale(
     else:
         aioclient_mock.post(TOKEN_URL, status=token_status, text="Service Unavailable")
     aioclient_mock.get(STATUS_URL, json=status_response(lock_status))
-    aioclient_mock.get(LOG_URL, json={"data": log})
+    if log is not None:
+        aioclient_mock.get(LOG_URL, json={"data": log})
     aioclient_mock.post(LOCK_URL, json={"code": "000"})
     aioclient_mock.post(UNLOCK_URL, json={"code": "000"})
 
