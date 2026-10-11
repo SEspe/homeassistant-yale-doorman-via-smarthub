@@ -3,6 +3,22 @@
 All notable changes to this fork are documented here. Upstream is
 [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub).
 
+## 0.0.20 (this fork)
+### Fixed
+- The integration imported `async_timeout`, which current Home Assistant no longer
+  ships - on a clean install it failed to load. Now uses Python's `asyncio.timeout`.
+- Login used `aiohttp.BasicAuth`, which is deprecated and removed in aiohttp 4. The
+  header is now built directly (identical bytes, verified by a test).
+- `download_yale_event_log` with `pages: '*'` crashed; it now fetches until an empty
+  page (max 50), and `pages_fetched` reports the real number of pages.
+- hassfest/HACS validation errors: manifest key order, unsupported `response` block in
+  `services.yaml`, obsolete `domains`/`iot_class` in `hacs.json`, and the event-log
+  texts moved out of `translations/` into `event_log_texts.json`.
+
+### Added
+- Automated tests (`tests/`, pytest-homeassistant-custom-component) run on every push
+  via GitHub Actions. Deprecation warnings from the integration's own code fail them.
+
 ## 0.0.19 (this fork)
 ### Added
 - **Reauthentication** when the Yale password changes. When Yale rejects the stored

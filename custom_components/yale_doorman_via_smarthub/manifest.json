@@ -11,5 +11,5 @@
     "iot_class": "cloud_polling",
     "issue_tracker": "https://github.com/SEspe/homeassistant-yale-doorman-via-smarthub/issues",
     "requirements": [],
-    "version": "0.0.19"
+    "version": "0.0.20"
 }
