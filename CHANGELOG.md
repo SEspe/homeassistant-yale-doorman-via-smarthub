@@ -7,6 +7,14 @@ All notable changes to this fork are documented here. Upstream is
 ### Added
 - Norwegian (Bokmål, `nb`) translation: setup/Configure dialogs, Activity event types
   and attributes, and the `download_yale_event_log` event descriptions.
+- `download_yale_event_log` service: new `utc` option to get times in UTC
+  (`set_utc=1`) instead of the hub's local time.
+
+### Fixed
+- Activity `yale_time` was an hour behind real local time: the event log was read with
+  `set_utc=0`, and the hub's "local" time turned out to be an hour behind Norwegian
+  summer time. The integration now requests UTC and converts to Home Assistant's
+  time zone itself.
 
 ## 0.0.17 (this fork)
 ### Added

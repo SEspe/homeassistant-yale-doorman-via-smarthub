@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 import os
 import json
@@ -94,10 +94,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
             # Get page count from service call
             max_pages = int(call.data.get("pages", 1))
+            utc = bool(call.data.get("utc", False))
             all_events = []
 
             for page_num in range(1, max_pages + 1):
-                log_data = await coordinator.api.async_get_yale_event_log(page_number=str(page_num))
+                log_data = await coordinator.api.async_get_yale_event_log(page_number=str(page_num), utc=utc)
                 log_events = log_data.get("data", [])
                 _LOGGER.info(f"Downloaded page {str(page_num)} with {len(log_events)} events")
                 all_events.extend(log_events)
@@ -252,7 +253,7 @@ class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
         self._log_fetches_pending = max(self._log_fetches_pending - 1, 0)
         self._polls_since_log_read = 0
 
-        log_data = await self.api.async_get_yale_event_log(page_number="1")
+        log_data = await self.api.async_get_yale_event_log(page_number="1", utc=True)
         events = (log_data or {}).get("data")
         if not isinstance(events, list):
             _LOGGER.debug("Event log read returned no events: %s", log_data)
@@ -310,12 +311,16 @@ class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
 
     @staticmethod
     def _parse_yale_time(value):
-        """Yale reports local time ("2026/10/11 12:19:49") because of set_utc=0."""
+        """Convert Yale's UTC time ("2026/10/11 10:19:49", set_utc=1) to HA local time.
+
+        UTC is requested because set_utc=0 (hub local time) was an hour behind real
+        local time on a Norwegian install in summer time.
+        """
         try:
             naive = datetime.strptime(value, "%Y/%m/%d %H:%M:%S")
         except (TypeError, ValueError):
             return value
-        return naive.replace(tzinfo=dt_util.get_default_time_zone()).isoformat()
+        return dt_util.as_local(naive.replace(tzinfo=timezone.utc)).isoformat()
     
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = hass.data[DOMAIN][entry.entry_id]

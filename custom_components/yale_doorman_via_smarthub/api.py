@@ -213,15 +213,18 @@ class YaleDoormanViaSmarthubApiClient:
         except Exception as exception:
             _LOGGER.error("Something really wrong happened calling %s! - %s", url, exception, exc_info=True)
 
-    async def async_get_yale_event_log(self, page_number: str = "1") -> dict:
+    async def async_get_yale_event_log(self, page_number: str = "1", utc: bool = False) -> dict:
         """
         Download the last month's event log from Yale API.
+
+        utc=False (set_utc=0) returns the hub's local time, which has been seen running
+        an hour behind real local time; utc=True (set_utc=1) asks Yale for UTC.
         """
         try:
             if not await self.async_login():
                 _LOGGER.warning("Skipping event log request because login failed")
                 return None
-            url = f"https://mob.yalehomesystem.co.uk/yapi/api/event/report/?page_num={page_number}&set_utc=0"
+            url = f"https://mob.yalehomesystem.co.uk/yapi/api/event/report/?page_num={page_number}&set_utc={1 if utc else 0}"
             data = {}
             headers = {
                     "Authorization": f"Bearer {self._access_token}"

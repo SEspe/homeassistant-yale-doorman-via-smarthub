@@ -8,6 +8,13 @@ download_yale_event_log:
       example: "2"
       selector:
         text:
+    utc:
+      description: "Return times in UTC (Yale set_utc=1) instead of the hub's local time, which may be off by an hour."
+      required: false
+      default: false
+      example: true
+      selector:
+        boolean:
   response:
     description: "Result from request:"
     fields:
