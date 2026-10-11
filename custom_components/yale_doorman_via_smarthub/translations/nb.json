@@ -1,0 +1,80 @@
+{
+    "title": "Yale Doorman via Smart Hub",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Yale Doorman via Smart Hub",
+                "description": "Skriv inn påloggingsinformasjonen til din Yale Smart Hub. Hvis du vil kunne låse opp døren med automasjoner, skriv også inn PIN-koden som skal brukes.",
+                "data": {
+                    "username": "Brukernavn",
+                    "password": "Passord",
+                    "pincode": "PIN-kode",
+                    "enable_binary_sensor": "Vis dørsensoren som en egen entitet"
+                }
+            }
+        },
+        "error": {
+            "auth": "Feil brukernavn eller passord."
+        }
+    }, "options": {
+        "step": {
+            "user": {
+                "title": "Yale Doorman via Smart Hub",
+                "description": "Skriv inn påloggingsinformasjonen til din Yale Smart Hub. Hvis du vil kunne låse opp døren med automasjoner, skriv også inn PIN-koden som skal brukes.",
+                "data": {
+                    "username": "Brukernavn",
+                    "password": "Passord",
+                    "pincode": "PIN-kode",
+                    "enable_binary_sensor": "Vis dørsensoren som en egen entitet"
+                }
+            }
+        }
+    }, "entity": {
+        "event": {
+            "activity": {
+                "name": "Aktivitet",
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "unlocked_inside": "Låst opp innenfra",
+                            "unlocked_outside": "Låst opp utenfra (kode eller brikke)",
+                            "unlocked_app": "Låst opp med app",
+                            "auto_relocked": "Automatisk låst",
+                            "lock_failed": "Låsing mislyktes",
+                            "locked_after_failure": "Låst etter mislykket låsing",
+                            "locked_inside": "Låst innenfra",
+                            "locked_star_button": "Låst med stjerneknappen",
+                            "locked_app": "Låst med app"
+                        }
+                    },
+                    "user": {
+                        "name": "Bruker"
+                    },
+                    "yale_time": {
+                        "name": "Yale-tid"
+                    },
+                    "yale_event_code": {
+                        "name": "Yale-hendelseskode"
+                    }
+                }
+            }
+        }
+    }, "responses": {
+            "event_type": {
+                "1301": "Yale hub - ingen strømforsyning",
+                "1302": "Yale hub - lavt batteri",
+                "1602": "Periodisk test",
+                "1801": "Låst opp innenfra",
+                "1802": "Låst opp utenfra med brikke eller kode",
+                "1803": "Låst opp med app",
+                "1807": "Automatisk låst",
+                "1812": "Lås lagt til i systemet",
+                "1815": "Låsing mislyktes",
+                "1816": "Låst etter mislykket låsing",
+                "3801": "Låst innenfra",
+                "3802": "Låst med stjerneknappen",
+                "3803": "Låst med app",
+                "3812": "Lås fjernet fra systemet"
+            }
+        }
+}

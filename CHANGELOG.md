@@ -3,6 +3,11 @@
 All notable changes to this fork are documented here. Upstream is
 [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub).
 
+## 0.0.18 (this fork)
+### Added
+- Norwegian (Bokmål, `nb`) translation: setup/Configure dialogs, Activity event types
+  and attributes, and the `download_yale_event_log` event descriptions.
+
 ## 0.0.17 (this fork)
 ### Added
 - **Activity event entity** per lock, fed from the Yale event log: unlocked from
