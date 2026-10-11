@@ -9,6 +9,20 @@ So far only tested on a single Yale Doorman V2N.
 
 <img style="width:300px;" src="web/images/logo_1024.png" alt="Doorman" />
 
+# Lock activity
+Each lock gets an **Activity** event entity (e.g. `event.ytterdor_activity`) fed from the Yale
+event log, so the Home Assistant Activity/logbook shows *how* the door was locked or unlocked:
+from inside, from outside with code or tag, by app, with the star button, auto-relock, failed
+lock. The `user` attribute holds the user name Yale reports (for code/tag and app unlocks).
+Door open/close comes from the door binary sensor, and plain locked/unlocked from the lock.
+
+To limit traffic to Yale's cloud, the event log is read once at startup, right after a
+lock/door status change, and every 5 minutes as a safety net (activity that leaves the status
+unchanged between two 30-second polls - e.g. unlock, enter, relock - can therefore show up to
+5 minutes late; the `yale_time` attribute holds the real time). Use the `event_type`
+attribute in automations, e.g. trigger on the entity's state changing and check
+`trigger.to_state.attributes.event_type == 'unlocked_outside'`.
+
 # Debug logging
 This fork adds detailed debug logging to help diagnose connection issues with the Yale smarthub
 (e.g. entities going `unavailable`). To enable it, add this to `configuration.yaml` and restart

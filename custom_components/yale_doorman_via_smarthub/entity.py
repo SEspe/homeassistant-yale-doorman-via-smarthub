@@ -30,13 +30,17 @@ class YaleDoormanViaSmarthubEntity(CoordinatorEntity):
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, self.unique_id)},
-            "name": self.name,
+            "name": self.device_name,
             "model": MODEL,
             "manufacturer": MANUFACTURER,
         }
-    
+
     @property
     def name(self):
+        return self.device_name
+
+    @property
+    def device_name(self):
         try:
             name = self.coordinator.data["data"]["device_status"][self.idx]["name"]
             self.old_name = name

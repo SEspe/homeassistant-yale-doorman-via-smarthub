@@ -1,5 +1,5 @@
 import asyncio
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 import os
 import json
@@ -12,6 +12,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util.json import load_json
+from homeassistant.util import dt as dt_util
 
 from .api import YaleDoormanViaSmarthubApiClient
 
@@ -23,6 +24,10 @@ from .const import (
     PLATFORMS,
     LOCK,
     BINARY_SENSOR,
+    EVENT,
+    ACTIVITY_EVENT_TYPES,
+    LOG_FETCH_RETRIES,
+    LOG_SAFETY_POLLS,
     STARTUP_MESSAGE,
 )
 
@@ -56,6 +61,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     coordinator.platforms.append(LOCK)
     if enable_binary_sensor:
         coordinator.platforms.append(BINARY_SENSOR)
+    coordinator.platforms.append(EVENT)
     await hass.config_entries.async_forward_entry_setups(entry, coordinator.platforms)
     
     entry.add_update_listener(async_reload_entry)
@@ -186,6 +192,14 @@ class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, client: YaleDoormanViaSmarthubApiClient) -> None:
         self.api = client
         self.platforms = []
+        # Lock activity read from the Yale event log, oldest first. Each item has an
+        # increasing "seq" so event entities can tell which ones they already fired.
+        self.activity_events = []
+        self.activity_seq = 0
+        self._seen_log_keys = None  # None until the first log read sets the baseline
+        self._last_lock_status = None
+        self._log_fetches_pending = 0
+        self._polls_since_log_read = 0
         
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
 
@@ -200,12 +214,108 @@ class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
                 raise UpdateFailed("No data returned from Yale smarthub")
             device_count = len(status.get("data", {}).get("device_status", []))
             _LOGGER.debug("Coordinator update succeeded, %s device(s) reported", device_count)
-            return status
         except UpdateFailed:
             raise
         except Exception as exception:
             _LOGGER.error("Coordinator update failed: %s", exception, exc_info=True)
             raise UpdateFailed(str(exception)) from exception
+
+        try:
+            await self._async_update_activity(status)
+        except Exception as exception:
+            # Activity is a bonus - never let it take the lock/door entities down
+            _LOGGER.error("Failed to update lock activity: %s", exception, exc_info=True)
+        return status
+
+    async def _async_update_activity(self, status: dict) -> None:
+        """Read the Yale event log sparingly, to limit cloud traffic.
+
+        The log is read once at startup to learn which events are old, then right after
+        a lock/door status change (for a few polls, since Yale may log the event a little
+        after the status flips), plus every LOG_SAFETY_POLLS polls to catch activity
+        that left the status unchanged between two polls.
+        """
+        lock_status = tuple(
+            device.get("minigw_lock_status")
+            for device in status.get("data", {}).get("device_status", [])
+        )
+        if self._seen_log_keys is None or (
+            self._last_lock_status is not None and lock_status != self._last_lock_status
+        ):
+            self._log_fetches_pending = LOG_FETCH_RETRIES
+        self._last_lock_status = lock_status
+
+        self._polls_since_log_read += 1
+        safety_read = LOG_SAFETY_POLLS > 0 and self._polls_since_log_read >= LOG_SAFETY_POLLS
+        if self._log_fetches_pending <= 0 and not safety_read:
+            return
+        self._log_fetches_pending = max(self._log_fetches_pending - 1, 0)
+        self._polls_since_log_read = 0
+
+        log_data = await self.api.async_get_yale_event_log(page_number="1")
+        events = (log_data or {}).get("data")
+        if not isinstance(events, list):
+            _LOGGER.debug("Event log read returned no events: %s", log_data)
+            return
+
+        keys = {self._log_key(event) for event in events}
+        if self._seen_log_keys is None:
+            _LOGGER.debug("Event log baseline set from %s event(s)", len(events))
+            self._seen_log_keys = keys
+            self._log_fetches_pending = 0
+            return
+
+        new_events = [
+            event for event in events
+            if self._log_key(event) not in self._seen_log_keys
+            and str(event.get("event_type")) in ACTIVITY_EVENT_TYPES
+        ]
+        # Events that dropped off page 1 can never come back, so only the current page
+        # needs remembering
+        self._seen_log_keys = keys
+        if not new_events:
+            _LOGGER.debug("No new lock activity in event log yet")
+            return
+
+        self._log_fetches_pending = 0
+        for event in reversed(new_events):  # the log is newest first
+            try:
+                area = int(event.get("area"))
+                zone = int(event.get("zone"))
+            except (TypeError, ValueError):
+                continue
+            code = str(event.get("event_type"))
+            self.activity_seq += 1
+            self.activity_events.append({
+                "seq": self.activity_seq,
+                "area": area,
+                "zone": zone,
+                "event_type": ACTIVITY_EVENT_TYPES[code],
+                "yale_event_code": code,
+                "user": event.get("name") or None,
+                "yale_time": self._parse_yale_time(event.get("time")),
+            })
+            _LOGGER.debug("New lock activity: %s", self.activity_events[-1])
+        self.activity_events = self.activity_events[-20:]
+
+    @staticmethod
+    def _log_key(event: dict) -> tuple:
+        return (
+            event.get("time"),
+            str(event.get("event_type")),
+            event.get("area"),
+            event.get("zone"),
+            event.get("name"),
+        )
+
+    @staticmethod
+    def _parse_yale_time(value):
+        """Yale reports local time ("2026/10/11 12:19:49") because of set_utc=0."""
+        try:
+            naive = datetime.strptime(value, "%Y/%m/%d %H:%M:%S")
+        except (TypeError, ValueError):
+            return value
+        return naive.replace(tzinfo=dt_util.get_default_time_zone()).isoformat()
     
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = hass.data[DOMAIN][entry.entry_id]

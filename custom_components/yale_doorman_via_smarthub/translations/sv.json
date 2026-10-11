@@ -29,6 +29,36 @@
                 }
             }
         }
+    }, "entity": {
+        "event": {
+            "activity": {
+                "name": "Aktivitet",
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "unlocked_inside": "Upplåst inifrån",
+                            "unlocked_outside": "Upplåst utifrån (kod eller tagg)",
+                            "unlocked_app": "Upplåst av app",
+                            "auto_relocked": "Automatisk låsning",
+                            "lock_failed": "Låsning misslyckades",
+                            "locked_after_failure": "Låst efter misslyckad låsning",
+                            "locked_inside": "Låst inifrån",
+                            "locked_star_button": "Låst med *-knappen",
+                            "locked_app": "Låst med appen"
+                        }
+                    },
+                    "user": {
+                        "name": "Användare"
+                    },
+                    "yale_time": {
+                        "name": "Yale-tid"
+                    },
+                    "yale_event_code": {
+                        "name": "Yale-händelsekod"
+                    }
+                }
+            }
+        }
     }, "responses": {
 		"event_type": {
             "1301": "Yale hub - ingen str\u00f6mf\u00f6rs\u00f6rjning",

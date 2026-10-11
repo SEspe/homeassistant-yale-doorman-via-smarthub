@@ -3,6 +3,20 @@
 All notable changes to this fork are documented here. Upstream is
 [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub).
 
+## 0.0.17 (this fork)
+### Added
+- **Activity event entity** per lock, fed from the Yale event log: unlocked from
+  inside / from outside (code or tag) / by app, locked from inside / with star button /
+  by app, auto-relocked, failed lock. Shows in the Home Assistant Activity log and can
+  trigger automations; the `user` attribute carries the user name Yale reports. To
+  limit cloud traffic the log is read at startup, after a lock/door status change, and
+  every 5 minutes (`LOG_SAFETY_POLLS`) to catch activity that left the status unchanged
+  between two polls.
+
+### Fixed
+- `async_get_yale_event_log` now logs in first, so the `download_yale_event_log`
+  service no longer sends a stale or missing access token.
+
 ## 0.0.16 (this fork)
 ### Changed
 - The door binary sensor now defaults to **enabled**. New installs get it ticked by

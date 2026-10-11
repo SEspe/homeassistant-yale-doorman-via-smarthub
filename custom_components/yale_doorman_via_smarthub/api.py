@@ -218,6 +218,9 @@ class YaleDoormanViaSmarthubApiClient:
         Download the last month's event log from Yale API.
         """
         try:
+            if not await self.async_login():
+                _LOGGER.warning("Skipping event log request because login failed")
+                return None
             url = f"https://mob.yalehomesystem.co.uk/yapi/api/event/report/?page_num={page_number}&set_utc=0"
             data = {}
             headers = {

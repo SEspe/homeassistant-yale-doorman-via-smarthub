@@ -29,6 +29,36 @@
                 }
             }
         }
+    }, "entity": {
+        "event": {
+            "activity": {
+                "name": "Activity",
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "unlocked_inside": "Unlocked from inside",
+                            "unlocked_outside": "Unlocked from outside (code or tag)",
+                            "unlocked_app": "Unlocked by app",
+                            "auto_relocked": "Auto-relocked",
+                            "lock_failed": "Failed to lock",
+                            "locked_after_failure": "Locked after a failed lock",
+                            "locked_inside": "Locked from inside",
+                            "locked_star_button": "Locked with star button",
+                            "locked_app": "Locked by app"
+                        }
+                    },
+                    "user": {
+                        "name": "User"
+                    },
+                    "yale_time": {
+                        "name": "Yale time"
+                    },
+                    "yale_event_code": {
+                        "name": "Yale event code"
+                    }
+                }
+            }
+        }
     }, "responses": {
             "event_type": {
                 "1301": "Yale hub - no powersupply",
