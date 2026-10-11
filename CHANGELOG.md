@@ -1,9 +1,9 @@
 # Changelog
 
-All notable changes to this fork are documented here. Upstream is
-[jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub).
+All notable changes are documented here. Based on [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub)
+by Joakim Syk (version 0.0.8); entries below are the changes made since.
 
-## 0.0.20 (this fork)
+## 0.0.20
 ### Fixed
 - The integration imported `async_timeout`, which current Home Assistant no longer
   ships - on a clean install it failed to load. Now uses Python's `asyncio.timeout`.
@@ -19,7 +19,7 @@ All notable changes to this fork are documented here. Upstream is
 - Automated tests (`tests/`, pytest-homeassistant-custom-component) run on every push
   via GitHub Actions. Deprecation warnings from the integration's own code fail them.
 
-## 0.0.19 (this fork)
+## 0.0.19
 ### Added
 - **Reauthentication** when the Yale password changes. When Yale rejects the stored
   username/password (`invalid_grant`), the integration now raises
@@ -39,7 +39,7 @@ All notable changes to this fork are documented here. Upstream is
   several reloads. The listener is now removed on unload, and reloads go through Home
   Assistant's scheduler.
 
-## 0.0.18 (this fork)
+## 0.0.18
 ### Added
 - Norwegian (Bokmål, `nb`) translation: setup/Configure dialogs, Activity event types
   and attributes, and the `download_yale_event_log` event descriptions.
@@ -52,7 +52,7 @@ All notable changes to this fork are documented here. Upstream is
   summer time. The integration now requests UTC and converts to Home Assistant's
   time zone itself.
 
-## 0.0.17 (this fork)
+## 0.0.17
 ### Added
 - **Activity event entity** per lock, fed from the Yale event log: unlocked from
   inside / from outside (code or tag) / by app, locked from inside / with star button /
@@ -66,7 +66,7 @@ All notable changes to this fork are documented here. Upstream is
 - `async_get_yale_event_log` now logs in first, so the `download_yale_event_log`
   service no longer sends a stale or missing access token.
 
-## 0.0.16 (this fork)
+## 0.0.16
 ### Changed
 - The door binary sensor now defaults to **enabled**. New installs get it ticked by
   default in the setup form, and existing entries that predate the option (no
@@ -74,7 +74,7 @@ All notable changes to this fork are documented here. Upstream is
   turned **off** keep it off. Previously the option defaulted to off, so the binary
   sensor silently never appeared unless the user knew to enable it in Configure.
 
-## 0.0.15 (this fork)
+## 0.0.15
 Fix the options ("Configure") dialog failing to open.
 
 ### Fixed
@@ -86,7 +86,7 @@ Fix the options ("Configure") dialog failing to open.
   over the existing entry data. Without this the "enable binary sensor" option (and
   username/password/pincode) could not be changed at all.
 
-## 0.0.14 (this fork)
+## 0.0.14
 Fix the integration failing to start on recent Home Assistant / Python 3.14.
 
 ### Fixed
@@ -101,7 +101,7 @@ Fix the integration failing to start on recent Home Assistant / Python 3.14.
   `open()` on the event loop as well - it would have hit the same trap whenever the
   service ran. Moved to an executor.
 
-## 0.0.13 (this fork)
+## 0.0.13
 Follow-up bug-fix pass over the whole integration.
 
 ### Fixed
@@ -130,7 +130,7 @@ Follow-up bug-fix pass over the whole integration.
   listener handle reloading (the old dead reload-branch code, which only had `pass`
   statements, was removed).
 
-## 0.0.12 (this fork)
+## 0.0.12
 Base: upstream `main` at commit `6d883a1` (manifest version `0.0.8`).
 
 Versioned `0.0.12` instead of `0.0.9` because GitHub's fork operation copies all of

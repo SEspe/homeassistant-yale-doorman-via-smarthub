@@ -2,10 +2,8 @@
 A Home Assistant integration to control a Yale Doorman lock via the Yale Smart Hub.
 So far only tested on a single Yale Doorman V2N.
 
-> **This is a fork** of [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub),
-> which remains the original project and its owner. This fork exists to carry debug
-> logging and bug fixes (see `CHANGELOG.md`) while they're not yet in upstream.
-> Consider starring/supporting the original repo if this integration is useful to you.
+> Based on [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub)
+> by Joakim Syk, licensed under GPL v3. See `CHANGELOG.md` for the changes made since.
 
 <img style="width:300px;" src="web/images/logo_1024.png" alt="Doorman" />
 
@@ -24,7 +22,7 @@ attribute in automations, e.g. trigger on the entity's state changing and check
 `trigger.to_state.attributes.event_type == 'unlocked_outside'`.
 
 # Debug logging
-This fork adds detailed debug logging to help diagnose connection issues with the Yale smarthub
+The integration has detailed debug logging to help diagnose connection issues with the Yale smarthub
 (e.g. entities going `unavailable`). To enable it, add this to `configuration.yaml` and restart
 Home Assistant:
 
@@ -45,4 +43,7 @@ Then check **Settings > System > Logs** (or `home-assistant.log`) for lines from
 - `HTTP 5xx` with a response body - Yale's backend is erroring server-side.
 
 # Thank You
+Give credit to the original author, Joakim Syk ([@jockesyk](https://github.com/jockesyk)),
+who created this integration - if it is useful to you, consider buying him a coffee:
+
 <a href="https://www.buymeacoffee.com/jockesyk" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/black_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a><br>

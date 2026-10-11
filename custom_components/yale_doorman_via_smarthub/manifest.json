@@ -2,7 +2,6 @@
     "domain": "yale_doorman_via_smarthub",
     "name": "Yale Doorman via Smart Hub",
     "codeowners": [
-        "@jockesyk",
         "@SEspe"
     ],
     "config_flow": true,
