@@ -8,13 +8,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.translation import async_get_translations
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util.json import load_json
 from homeassistant.util import dt as dt_util
 
-from .api import YaleDoormanViaSmarthubApiClient
+from .api import YaleAuthError, YaleDoormanViaSmarthubApiClient
 
 from .const import (
     CONF_PASSWORD,
@@ -50,11 +50,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     session = async_get_clientsession(hass)
     client = YaleDoormanViaSmarthubApiClient(hass, username, password, session)
     
-    coordinator = YaleDoormanViaSmarthubDataUpdateCoordinator(hass, client=client)
-    await coordinator.async_refresh()
-    
-    if not coordinator.last_update_success:
-        raise ConfigEntryNotReady
+    coordinator = YaleDoormanViaSmarthubDataUpdateCoordinator(hass, entry, client=client)
+    # Raises ConfigEntryNotReady (retry later) on failure, or ConfigEntryAuthFailed when
+    # Yale rejects the password - HA then asks the user for a new one (reauth flow).
+    await coordinator.async_config_entry_first_refresh()
     
     hass.data[DOMAIN][entry.entry_id] = coordinator
     
@@ -64,7 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     coordinator.platforms.append(EVENT)
     await hass.config_entries.async_forward_entry_setups(entry, coordinator.platforms)
     
-    entry.add_update_listener(async_reload_entry)
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     
     async def handle_download_log(call: ServiceCall) -> dict:
         """Handles the service action to download the event log."""
@@ -190,7 +189,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
     
-    def __init__(self, hass: HomeAssistant, client: YaleDoormanViaSmarthubApiClient) -> None:
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, client: YaleDoormanViaSmarthubApiClient) -> None:
         self.api = client
         self.platforms = []
         # Lock activity read from the Yale event log, oldest first. Each item has an
@@ -202,7 +201,9 @@ class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
         self._log_fetches_pending = 0
         self._polls_since_log_read = 0
         
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
+        super().__init__(
+            hass, _LOGGER, config_entry=entry, name=DOMAIN, update_interval=SCAN_INTERVAL
+        )
 
     async def _async_update_data(self):
         try:
@@ -217,6 +218,11 @@ class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.debug("Coordinator update succeeded, %s device(s) reported", device_count)
         except UpdateFailed:
             raise
+        except YaleAuthError as exception:
+            # Stops polling and starts HA's reauth flow instead of retrying a bad password
+            raise ConfigEntryAuthFailed(
+                "Yale rejected the username/password - enter the new password"
+            ) from exception
         except Exception as exception:
             _LOGGER.error("Coordinator update failed: %s", exception, exc_info=True)
             raise UpdateFailed(str(exception)) from exception
@@ -339,5 +345,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unloaded
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry)
+    # Let HA do the reload - it also dedups with the reload a finished reauth schedules
+    hass.config_entries.async_schedule_reload(entry.entry_id)

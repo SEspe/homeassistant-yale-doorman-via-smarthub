@@ -11,12 +11,24 @@
                     "pincode": "PIN-kode",
                     "enable_binary_sensor": "Vis dørsensoren som en egen entitet"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Yale-passordet er endret",
+                "description": "Yale godtok ikke passordet for {username}. Skriv inn det nye passordet til Yale-kontoen din.",
+                "data": {
+                    "password": "Passord"
+                }
             }
         },
         "error": {
-            "auth": "Feil brukernavn eller passord."
+            "auth": "Feil brukernavn eller passord.",
+            "cannot_connect": "Fikk ikke kontakt med Yale-serveren. Prøv igjen senere."
+        },
+        "abort": {
+            "reauth_successful": "Det nye passordet fungerer - integrasjonen er startet på nytt."
         }
-    }, "options": {
+    },
+    "options": {
         "step": {
             "user": {
                 "title": "Yale Doorman via Smart Hub",
@@ -28,8 +40,13 @@
                     "enable_binary_sensor": "Vis dørsensoren som en egen entitet"
                 }
             }
+        },
+        "error": {
+            "auth": "Feil brukernavn eller passord.",
+            "cannot_connect": "Fikk ikke kontakt med Yale-serveren. Prøv igjen senere."
         }
-    }, "entity": {
+    },
+    "entity": {
         "event": {
             "activity": {
                 "name": "Aktivitet",
@@ -59,22 +76,23 @@
                 }
             }
         }
-    }, "responses": {
-            "event_type": {
-                "1301": "Yale hub - ingen strømforsyning",
-                "1302": "Yale hub - lavt batteri",
-                "1602": "Periodisk test",
-                "1801": "Låst opp innenfra",
-                "1802": "Låst opp utenfra med brikke eller kode",
-                "1803": "Låst opp med app",
-                "1807": "Automatisk låst",
-                "1812": "Lås lagt til i systemet",
-                "1815": "Låsing mislyktes",
-                "1816": "Låst etter mislykket låsing",
-                "3801": "Låst innenfra",
-                "3802": "Låst med stjerneknappen",
-                "3803": "Låst med app",
-                "3812": "Lås fjernet fra systemet"
-            }
+    },
+    "responses": {
+        "event_type": {
+            "1301": "Yale hub - ingen strømforsyning",
+            "1302": "Yale hub - lavt batteri",
+            "1602": "Periodisk test",
+            "1801": "Låst opp innenfra",
+            "1802": "Låst opp utenfra med brikke eller kode",
+            "1803": "Låst opp med app",
+            "1807": "Automatisk låst",
+            "1812": "Lås lagt til i systemet",
+            "1815": "Låsing mislyktes",
+            "1816": "Låst etter mislykket låsing",
+            "3801": "Låst innenfra",
+            "3802": "Låst med stjerneknappen",
+            "3803": "Låst med app",
+            "3812": "Lås fjernet fra systemet"
         }
+    }
 }

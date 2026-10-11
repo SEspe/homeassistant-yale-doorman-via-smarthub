@@ -3,6 +3,26 @@
 All notable changes to this fork are documented here. Upstream is
 [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub).
 
+## 0.0.19 (this fork)
+### Added
+- **Reauthentication** when the Yale password changes. When Yale rejects the stored
+  username/password (`invalid_grant`), the integration now raises
+  `ConfigEntryAuthFailed`: polling stops and Home Assistant shows a "Reauthentication
+  required" prompt asking for the new password, which is checked against Yale before
+  it is saved and the integration restarted. Previously it retried the old password
+  forever (startup) or every 30 seconds (running), and the only fix was Configure +
+  manual Reload.
+- The setup and Configure dialogs now check a new username/password against Yale and
+  show "wrong username/password" or "could not reach Yale" instead of failing silently
+  (setup) or saving a bad password (Configure).
+- `hacs.json` now requires Home Assistant **2024.12.0** or newer (reauth and
+  coordinator APIs used here).
+
+### Fixed
+- Each Configure/reload added another update listener, so later changes triggered
+  several reloads. The listener is now removed on unload, and reloads go through Home
+  Assistant's scheduler.
+
 ## 0.0.18 (this fork)
 ### Added
 - Norwegian (Bokmål, `nb`) translation: setup/Configure dialogs, Activity event types

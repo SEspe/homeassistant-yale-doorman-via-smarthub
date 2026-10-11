@@ -16,6 +16,10 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 HEADERS = {"Content-type": "application/json; charset=UTF-8"}
 
 
+class YaleAuthError(Exception):
+    """Yale rejected the username/password (e.g. the password was changed)."""
+
+
 class YaleDoormanViaSmarthubApiClient:
     def __init__(
         self, hass, username: str, password: str, session: aiohttp.ClientSession
@@ -99,6 +103,8 @@ class YaleDoormanViaSmarthubApiClient:
                 _LOGGER.debug("Panel status response: %s", result)
             return result
         except Exception as exception:
+            if isinstance(exception, YaleAuthError):
+                raise
             _LOGGER.error("Unexpected error fetching panel status: %s", exception, exc_info=True)
     
     async def async_lock(self, device_id: str, area: int = 1, zone: int = 1) -> bool:
@@ -125,6 +131,8 @@ class YaleDoormanViaSmarthubApiClient:
             _LOGGER.debug("Lock command response: %s", result)
             if result and result["code"] == "000":
                 return True
+        except YaleAuthError:
+            _LOGGER.warning("Skipping lock command because Yale rejected the username/password")
         except Exception as exception:
             _LOGGER.error("Unexpected error sending lock command: %s", exception, exc_info=True)
         return False
@@ -151,6 +159,8 @@ class YaleDoormanViaSmarthubApiClient:
             _LOGGER.debug("Unlock command response: %s", result)
             if result and result["code"] == "000":
                 return True
+        except YaleAuthError:
+            _LOGGER.warning("Skipping unlock command because Yale rejected the username/password")
         except Exception as exception:
             _LOGGER.error("Unexpected error sending unlock command: %s", exception, exc_info=True)
         return False
@@ -183,6 +193,9 @@ class YaleDoormanViaSmarthubApiClient:
                         url,
                         body_text,
                     )
+                    # Only the token endpoint answers invalid_grant - wrong username/password
+                    if response.status in (400, 401) and "invalid_grant" in body_text:
+                        raise YaleAuthError(body_text)
                     return None
 
                 if method in ("get", "post"):
@@ -190,6 +203,8 @@ class YaleDoormanViaSmarthubApiClient:
                     return result
                 return None
 
+        except YaleAuthError:
+            raise
         except asyncio.TimeoutError as exception:
             _LOGGER.error(
                 "Timeout after %ss fetching information from %s - %s",

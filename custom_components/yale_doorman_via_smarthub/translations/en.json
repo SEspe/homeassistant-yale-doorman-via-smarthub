@@ -9,14 +9,26 @@
                     "username": "Username",
                     "password": "Password",
                     "pincode": "PIN-code",
-					"enable_binary_sensor": "Show the door sensor as a separate entity"
+                    "enable_binary_sensor": "Show the door sensor as a separate entity"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Yale password changed",
+                "description": "Yale rejected the password for {username}. Enter the new password for your Yale account.",
+                "data": {
+                    "password": "Password"
                 }
             }
         },
         "error": {
-            "auth": "Username/Password is wrong."
+            "auth": "Username/Password is wrong.",
+            "cannot_connect": "Could not reach the Yale server. Try again later."
+        },
+        "abort": {
+            "reauth_successful": "The new password works - the integration has been restarted."
         }
-    }, "options": {
+    },
+    "options": {
         "step": {
             "user": {
                 "title": "Yale Doorman via Smart Hub",
@@ -25,11 +37,16 @@
                     "username": "Username",
                     "password": "Password",
                     "pincode": "PIN-code",
-					"enable_binary_sensor": "Show the door sensor as a separate entity"
+                    "enable_binary_sensor": "Show the door sensor as a separate entity"
                 }
             }
+        },
+        "error": {
+            "auth": "Username/Password is wrong.",
+            "cannot_connect": "Could not reach the Yale server. Try again later."
         }
-    }, "entity": {
+    },
+    "entity": {
         "event": {
             "activity": {
                 "name": "Activity",
@@ -59,22 +76,23 @@
                 }
             }
         }
-    }, "responses": {
-            "event_type": {
-                "1301": "Yale hub - no powersupply",
-                "1302": "Yale Hub - battery low",
-                "1602": "Periodical test",
-                "1801": "Unlocked from inside",
-                "1802": "Unlocked from outside, token or keypad",
-                "1803": "Unlocked by app",
-                "1807": "Auto-relocked",
-                "1812": "Lock added to the system",
-                "1815": "Failed to lock",
-                "1816": "Locked after a failed lock",
-                "3801": "Locked from inside",
-                "3802": "Locked with star button",
-                "3803": "Locked with app",
-                "3812": "Lock removed from the system"
-            }
+    },
+    "responses": {
+        "event_type": {
+            "1301": "Yale hub - no powersupply",
+            "1302": "Yale Hub - battery low",
+            "1602": "Periodical test",
+            "1801": "Unlocked from inside",
+            "1802": "Unlocked from outside, token or keypad",
+            "1803": "Unlocked by app",
+            "1807": "Auto-relocked",
+            "1812": "Lock added to the system",
+            "1815": "Failed to lock",
+            "1816": "Locked after a failed lock",
+            "3801": "Locked from inside",
+            "3802": "Locked with star button",
+            "3803": "Locked with app",
+            "3812": "Lock removed from the system"
         }
+    }
 }

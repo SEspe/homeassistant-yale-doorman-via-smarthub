@@ -4,32 +4,49 @@
         "step": {
             "user": {
                 "title": "Yale Doorman via Smart Hub",
-                "description": "Ange inloggningsinformationen till din Yale Smart Hub. Om du vill kunna automatisera uppl\u00e5sning, ange ocks\u00e5 PIN-koden.",
+                "description": "Ange inloggningsinformationen till din Yale Smart Hub. Om du vill kunna automatisera upplåsning, ange också PIN-koden.",
                 "data": {
-                    "username": "Anv\u00e4ndarnamn",
-                    "password": "L\u00f6senord",
+                    "username": "Användarnamn",
+                    "password": "Lösenord",
                     "pincode": "PIN-kod",
-					"enable_binary_sensor": "Visa d\u00f6rr-sensorn som en egen entitet"
+                    "enable_binary_sensor": "Visa dörr-sensorn som en egen entitet"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Yale-lösenordet har ändrats",
+                "description": "Yale godkände inte lösenordet för {username}. Ange det nya lösenordet till ditt Yale-konto.",
+                "data": {
+                    "password": "Lösenord"
                 }
             }
         },
         "error": {
-            "auth": "Felaktigt anv\u00e4ndarnamn eller l\u00f6senord"
+            "auth": "Felaktigt användarnamn eller lösenord",
+            "cannot_connect": "Kunde inte nå Yales server. Försök igen senare."
+        },
+        "abort": {
+            "reauth_successful": "Det nya lösenordet fungerar - integrationen har startats om."
         }
-    }, "options": {
+    },
+    "options": {
         "step": {
             "user": {
                 "title": "Yale Doorman via Smart Hub",
-                "description": "Ange inloggningsinformationen till din Yale Smart Hub. Om du vill kunna automatisera uppl\u00e5sning, ange ocks\u00e5 PIN-koden.",
+                "description": "Ange inloggningsinformationen till din Yale Smart Hub. Om du vill kunna automatisera upplåsning, ange också PIN-koden.",
                 "data": {
-                    "username": "Anv\u00e4ndarnamn",
-                    "password": "L\u00f6senord",
+                    "username": "Användarnamn",
+                    "password": "Lösenord",
                     "pincode": "PIN-kod",
-					"enable_binary_sensor": "Visa d\u00f6rr-sensorn som en egen entitet"
+                    "enable_binary_sensor": "Visa dörr-sensorn som en egen entitet"
                 }
             }
+        },
+        "error": {
+            "auth": "Felaktigt användarnamn eller lösenord",
+            "cannot_connect": "Kunde inte nå Yales server. Försök igen senare."
         }
-    }, "entity": {
+    },
+    "entity": {
         "event": {
             "activity": {
                 "name": "Aktivitet",
@@ -59,22 +76,23 @@
                 }
             }
         }
-    }, "responses": {
-		"event_type": {
-            "1301": "Yale hub - ingen str\u00f6mf\u00f6rs\u00f6rjning",
-            "1302": "Yale Hub - l\u00e5g batteriniv\u00e5",
+    },
+    "responses": {
+        "event_type": {
+            "1301": "Yale hub - ingen strömförsörjning",
+            "1302": "Yale Hub - låg batterinivå",
             "1602": "Periodiskt test",
-            "1801": "Uppl\u00e5st inifr\u00e5n",
-            "1802": "Uppl\u00e5st utifr\u00e5n med tagg eller kod",
-            "1803": "Uppl\u00e5st av app",
-            "1807": "Automatisk l\u00e5sning",
-            "1812": "L\u00e5s tillagt i systemet",
-            "1815": "L\u00e5sning misslyckades",
-            "1816": "L\u00e5st efter misslyckad l\u00e5sning",
-            "3801": "L\u00e5st från insidan",
-            "3802": "L\u00e5st med *-knappen",
-            "3803": "L\u00e5st med appen",
-            "3812": "L\u00e5s borttaget fr\u00e5n systemet"
-		}
+            "1801": "Upplåst inifrån",
+            "1802": "Upplåst utifrån med tagg eller kod",
+            "1803": "Upplåst av app",
+            "1807": "Automatisk låsning",
+            "1812": "Lås tillagt i systemet",
+            "1815": "Låsning misslyckades",
+            "1816": "Låst efter misslyckad låsning",
+            "3801": "Låst från insidan",
+            "3802": "Låst med *-knappen",
+            "3803": "Låst med appen",
+            "3812": "Lås borttaget från systemet"
+        }
     }
 }
