@@ -1,7 +1,4 @@
 {
   "name": "Yale Doorman via Smart Hub",
-  "iot_class": [
-    "Cloud Polling"
-  ],
   "homeassistant": "2024.12.0"
 }
