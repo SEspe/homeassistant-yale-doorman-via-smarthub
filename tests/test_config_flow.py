@@ -11,8 +11,6 @@ from custom_components.yale_doorman_via_smarthub.const import DOMAIN
 from .conftest import (
     ENTRY_DATA,
     LOCK_ENTITY,
-    TOKEN_URL,
-    calls_to,
     mock_yale,
     poll,
     setup_integration,
@@ -179,19 +177,21 @@ async def test_options_empty_secrets_keep_current_without_login(
     await setup_integration(hass, config_entry)
 
     result = await hass.config_entries.options.async_init(config_entry.entry_id)
-    mock_yale(aioclient_mock)
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        {"username": ENTRY_DATA["username"], "enable_binary_sensor": False},
-    )
-    await hass.async_block_till_done()
+    with patch(
+        "custom_components.yale_doorman_via_smarthub.config_flow._async_check_login"
+    ) as check_login:
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            {"username": ENTRY_DATA["username"], "enable_binary_sensor": False},
+        )
+        await hass.async_block_till_done()
 
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert config_entry.data["password"] == ENTRY_DATA["password"]
     assert config_entry.data["pincode"] == ENTRY_DATA["pincode"]
     assert config_entry.data["enable_binary_sensor"] is False
     # Nothing to check with Yale when the login didn't change
-    assert calls_to(aioclient_mock, TOKEN_URL) == []
+    check_login.assert_not_called()
 
 
 async def test_options_remove_pincode(hass: HomeAssistant, aioclient_mock, config_entry):
