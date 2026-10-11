@@ -32,12 +32,13 @@
         "step": {
             "user": {
                 "title": "Yale Doorman via Smart Hub",
-                "description": "Ange inloggningsinformationen till din Yale Smart Hub. Om du vill kunna automatisera upplåsning, ange också PIN-koden.",
+                "description": "Ändra inloggningsinformationen till din Yale Smart Hub. Lämna lösenord och PIN-kod tomma för att behålla de nuvarande. PIN-koden låter automationer låsa upp utan att ange kod; ta bort den för att alltid bli tillfrågad om koden.",
                 "data": {
                     "username": "Användarnamn",
                     "password": "Lösenord",
                     "pincode": "PIN-kod",
-                    "enable_binary_sensor": "Visa dörr-sensorn som en egen entitet"
+                    "enable_binary_sensor": "Visa dörr-sensorn som en egen entitet",
+                    "remove_pincode": "Ta bort sparad PIN-kod"
                 }
             }
         },

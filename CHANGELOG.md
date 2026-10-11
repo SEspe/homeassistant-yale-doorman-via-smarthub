@@ -13,9 +13,14 @@ by Joakim Syk (version 0.0.8); entries below are the changes made since.
   is dropped (288 fewer Yale requests a day); it remains only as a fallback for
   responses without `report_event_latest`.
 
+- **Configure dialog no longer shows the password and PIN-code.** Both are masked
+  password fields (also in setup and reauth) and start empty - the stored values are
+  never sent to the browser. Empty means "keep the current one". A new **Remove stored
+  PIN-code** checkbox removes the PIN, so the lock asks for the code on every unlock.
+
 ### Fixed
 - Debug logging wrote the Yale session `token` from every status response to the log
-  in clear text. It is now masked.
+  in clear text. It is now left out of the log entirely.
 
 ## 0.0.20
 ### Fixed

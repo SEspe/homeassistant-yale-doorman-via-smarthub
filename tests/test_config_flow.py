@@ -8,7 +8,15 @@ from homeassistant.data_entry_flow import FlowResultType
 
 from custom_components.yale_doorman_via_smarthub.const import DOMAIN
 
-from .conftest import ENTRY_DATA, mock_yale, poll, setup_integration
+from .conftest import (
+    ENTRY_DATA,
+    LOCK_ENTITY,
+    TOKEN_URL,
+    calls_to,
+    mock_yale,
+    poll,
+    setup_integration,
+)
 
 NEW_LOGIN = {
     "username": "stein@example.com",
@@ -130,3 +138,75 @@ async def test_options_flow_checks_new_password(hass: HomeAssistant, aioclient_m
     await hass.async_block_till_done()
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert config_entry.data["password"] == "new-password"
+
+
+def _fields(schema) -> dict:
+    """Map field name -> (validator, default or None) for a shown form."""
+    fields = {}
+    for key, validator in schema.schema.items():
+        default = key.default() if callable(key.default) else None
+        fields[str(key)] = (validator, default)
+    return fields
+
+
+async def test_secrets_are_masked_and_never_sent_to_the_browser(
+    hass: HomeAssistant, aioclient_mock, config_entry
+):
+    mock_yale(aioclient_mock)
+    await setup_integration(hass, config_entry)
+
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    fields = _fields(result["data_schema"])
+
+    for name in ("password", "pincode"):
+        validator, default = fields[name]
+        assert validator.config["type"] == "password"  # dots, not clear text
+        assert default is None  # stored value is not pre-filled
+    shown_defaults = [default for _, default in fields.values()]
+    assert ENTRY_DATA["password"] not in shown_defaults
+    assert ENTRY_DATA["pincode"] not in shown_defaults
+
+    setup_form = await _start_user_flow(hass)
+    setup_fields = _fields(setup_form["data_schema"])
+    assert setup_fields["password"][0].config["type"] == "password"
+    assert setup_fields["pincode"][0].config["type"] == "password"
+
+
+async def test_options_empty_secrets_keep_current_without_login(
+    hass: HomeAssistant, aioclient_mock, config_entry
+):
+    mock_yale(aioclient_mock)
+    await setup_integration(hass, config_entry)
+
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    mock_yale(aioclient_mock)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {"username": ENTRY_DATA["username"], "enable_binary_sensor": False},
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert config_entry.data["password"] == ENTRY_DATA["password"]
+    assert config_entry.data["pincode"] == ENTRY_DATA["pincode"]
+    assert config_entry.data["enable_binary_sensor"] is False
+    # Nothing to check with Yale when the login didn't change
+    assert calls_to(aioclient_mock, TOKEN_URL) == []
+
+
+async def test_options_remove_pincode(hass: HomeAssistant, aioclient_mock, config_entry):
+    mock_yale(aioclient_mock)
+    await setup_integration(hass, config_entry)
+
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {"username": ENTRY_DATA["username"], "remove_pincode": True, "enable_binary_sensor": True},
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert "pincode" not in config_entry.data
+    assert "remove_pincode" not in config_entry.data
+    # Without a stored PIN the lock asks for a 6-digit code again
+    assert hass.states.get(LOCK_ENTITY).attributes["code_format"] == r"^\d{6}$"

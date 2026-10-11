@@ -32,12 +32,13 @@
         "step": {
             "user": {
                 "title": "Yale Doorman via Smart Hub",
-                "description": "Enter the login information to access your Yale Smart Hub. If you want to be able to unlock the door using automations, also enter the PIN-code to use.",
+                "description": "Change the login information for your Yale Smart Hub. Leave the password and PIN-code empty to keep the current ones. The PIN-code lets automations unlock the door without typing a code; remove it to be asked for the code every time.",
                 "data": {
                     "username": "Username",
                     "password": "Password",
                     "pincode": "PIN-code",
-                    "enable_binary_sensor": "Show the door sensor as a separate entity"
+                    "enable_binary_sensor": "Show the door sensor as a separate entity",
+                    "remove_pincode": "Remove stored PIN-code"
                 }
             }
         },

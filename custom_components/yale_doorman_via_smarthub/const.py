@@ -40,6 +40,7 @@ CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
 CONF_PINCODE = "pincode"
 CONF_ENABLE_BINARY_SENSOR = "enable_binary_sensor"
+CONF_REMOVE_PINCODE = "remove_pincode"  # Configure-dialog checkbox only, never stored
 
 BITWISE_CLOSED = 16
 BITWISE_LOCKED = 1
