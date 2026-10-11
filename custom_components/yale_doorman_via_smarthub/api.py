@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import base64
 import socket
 from typing import Optional
 import aiohttp
@@ -69,12 +70,15 @@ class YaleDoormanViaSmarthubApiClient:
                 return False
 
         hub_login = self._hub_login
-        auth = aiohttp.BasicAuth(hub_login["u"], hub_login["p"])
+        # HTTP Basic auth built by hand - aiohttp.BasicAuth is deprecated (removed in aiohttp 4)
+        client_credentials = base64.b64encode(
+            f"{hub_login['u']}:{hub_login['p']}".encode("latin1")
+        ).decode("ascii")
         url = "https://mob.yalehomesystem.co.uk/yapi/o/token/"
         data = {"grant_type": "password", "username": self._username, "password": self._password}
-        headers = {"Accept": "application/json"}
+        headers = {"Accept": "application/json", "Authorization": f"Basic {client_credentials}"}
         _LOGGER.debug("Requesting new access token for user %s from %s", self._username, url)
-        result = await self.api_wrapper("post",url,data,headers,auth)
+        result = await self.api_wrapper("post",url,data,headers)
         try:
             self._access_token = result["access_token"]
             self._refresh_token = result["refresh_token"]
