@@ -103,7 +103,8 @@ class YaleDoormanViaSmarthubApiClient:
             if result is None:
                 _LOGGER.warning("Panel status request to %s returned no data", url)
             else:
-                _LOGGER.debug("Panel status response: %s", result)
+                # The response carries a Yale session token - keep it out of the log
+                _LOGGER.debug("Panel status response: %s", {**result, "token": "***"} if "token" in result else result)
             return result
         except Exception as exception:
             if isinstance(exception, YaleAuthError):

@@ -3,6 +3,20 @@
 All notable changes are documented here. Based on [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub)
 by Joakim Syk (version 0.0.8); entries below are the changes made since.
 
+## 0.0.21
+### Changed
+- Activity is detected from Yale's newest event (`report_event_latest`), which every
+  30-second status poll already carries: the event log is read only when it changes
+  (or the lock/door status changes). New activity now appears within about 30 seconds
+  even when the lock status ends up unchanged - previously a failed lock or a quick
+  unlock + relock waited up to 5 minutes for the safety read. The 5-minute safety read
+  is dropped (288 fewer Yale requests a day); it remains only as a fallback for
+  responses without `report_event_latest`.
+
+### Fixed
+- Debug logging wrote the Yale session `token` from every status response to the log
+  in clear text. It is now masked.
+
 ## 0.0.20
 ### Fixed
 - The integration imported `async_timeout`, which current Home Assistant no longer

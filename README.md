@@ -14,10 +14,11 @@ from inside, from outside with code or tag, by app, with the star button, auto-r
 lock. The `user` attribute holds the user name Yale reports (for code/tag and app unlocks).
 Door open/close comes from the door binary sensor, and plain locked/unlocked from the lock.
 
-To limit traffic to Yale's cloud, the event log is read once at startup, right after a
-lock/door status change, and every 5 minutes as a safety net (activity that leaves the status
-unchanged between two 30-second polls - e.g. unlock, enter, relock - can therefore show up to
-5 minutes late; the `yale_time` attribute holds the real time). Use the `event_type`
+To limit traffic to Yale's cloud, the event log is only read when something happened: every
+30-second status poll already tells which event Yale logged last, so the log is read once at
+startup and then only when that changes or the lock/door status changes. New activity shows up
+within about 30 seconds, also when the lock ends up as it was (e.g. unlock, enter, relock, or a
+failed lock). The `yale_time` attribute holds the time Yale logged the event. Use the `event_type`
 attribute in automations, e.g. trigger on the entity's state changing and check
 `trigger.to_state.attributes.event_type == 'unlocked_outside'`.
 

@@ -202,6 +202,7 @@ class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
         self.activity_seq = 0
         self._seen_log_keys = None  # None until the first log read sets the baseline
         self._last_lock_status = None
+        self._last_event_id = None
         self._log_fetches_pending = 0
         self._polls_since_log_read = 0
         
@@ -239,25 +240,40 @@ class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
         return status
 
     async def _async_update_activity(self, status: dict) -> None:
-        """Read the Yale event log sparingly, to limit cloud traffic.
+        """Read the Yale event log only when something happened, to limit cloud traffic.
 
-        The log is read once at startup to learn which events are old, then right after
-        a lock/door status change (for a few polls, since Yale may log the event a little
-        after the status flips), plus every LOG_SAFETY_POLLS polls to catch activity
-        that left the status unchanged between two polls.
+        Every status poll carries Yale's newest event (report_event_latest); its
+        report_id changes with each event, so the log is read only when it changes -
+        catching activity within one poll even when the lock status ends up unchanged.
+        The log is also read once at startup (to learn which events are old) and after
+        a lock/door status change. Reads repeat for a few polls until the new event shows
+        up in the log. Without report_event_latest, a timed read every LOG_SAFETY_POLLS
+        polls is the fallback.
         """
+        data = status.get("data", {})
         lock_status = tuple(
             device.get("minigw_lock_status")
-            for device in status.get("data", {}).get("device_status", [])
+            for device in data.get("device_status", [])
         )
-        if self._seen_log_keys is None or (
-            self._last_lock_status is not None and lock_status != self._last_lock_status
-        ):
+        latest = data.get("report_event_latest")
+        latest_id = latest.get("report_id") if isinstance(latest, dict) else None
+
+        changed = self._last_lock_status is not None and lock_status != self._last_lock_status
+        if latest_id is not None:
+            changed = changed or (
+                self._last_event_id is not None and latest_id != self._last_event_id
+            )
+            self._last_event_id = latest_id
+        if self._seen_log_keys is None or changed:
             self._log_fetches_pending = LOG_FETCH_RETRIES
         self._last_lock_status = lock_status
 
         self._polls_since_log_read += 1
-        safety_read = LOG_SAFETY_POLLS > 0 and self._polls_since_log_read >= LOG_SAFETY_POLLS
+        safety_read = (
+            latest_id is None
+            and LOG_SAFETY_POLLS > 0
+            and self._polls_since_log_read >= LOG_SAFETY_POLLS
+        )
         if self._log_fetches_pending <= 0 and not safety_read:
             return
         self._log_fetches_pending = max(self._log_fetches_pending - 1, 0)
@@ -281,14 +297,17 @@ class YaleDoormanViaSmarthubDataUpdateCoordinator(DataUpdateCoordinator):
             if self._log_key(event) not in self._seen_log_keys
             and str(event.get("event_type")) in ACTIVITY_EVENT_TYPES
         ]
+        if keys - self._seen_log_keys:
+            # Something new arrived (maybe only a non-lock event, e.g. the hub's
+            # periodic test) - the change has been seen, stop re-reading
+            self._log_fetches_pending = 0
         # Events that dropped off page 1 can never come back, so only the current page
         # needs remembering
         self._seen_log_keys = keys
         if not new_events:
-            _LOGGER.debug("No new lock activity in event log yet")
+            _LOGGER.debug("No new lock activity in event log")
             return
 
-        self._log_fetches_pending = 0
         for event in reversed(new_events):  # the log is newest first
             try:
                 area = int(event.get("area"))

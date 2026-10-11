@@ -1,7 +1,7 @@
 NAME = "Yale Doorman via Smart Hub"
 DOMAIN = "yale_doorman_via_smarthub"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.20"
+VERSION = "0.0.21"
 ISSUE_URL = "https://github.com/SEspe/homeassistant-yale-doorman-via-smarthub/issues"
 MANUFACTURER = "Yale"
 MODEL = "Doorman"
@@ -27,13 +27,13 @@ ACTIVITY_EVENT_TYPES = {
     "3803": "locked_app",
 }
 
-# Polls in a row to read the event log after a lock/door status change - Yale may
-# record the event slightly after the status flips
+# Polls in a row to read the event log after a change - Yale may record the event
+# slightly after the status flips
 LOG_FETCH_RETRIES = 3
 
-# Also read the event log every this many polls (10 x 30s = 5 min), to catch activity
-# that left the status unchanged, e.g. unlock + open + close + relock between two polls.
-# 0 = only read after status changes.
+# Fallback only, for status responses without report_event_latest: read the event log
+# every this many polls (10 x 30s = 5 min) to catch activity that left the lock status
+# unchanged. 0 = only read after status changes.
 LOG_SAFETY_POLLS = 10
 
 CONF_USERNAME = "username"

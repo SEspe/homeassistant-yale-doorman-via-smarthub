@@ -22,9 +22,13 @@ UNLOCK_URL = f"{BASE}/api/minigw/unlock/"
 
 INVALID_GRANT = '{"error": "invalid_grant", "error_description": "Invalid credentials given."}'
 
-# minigw_lock_status is hex: bit 16 = door closed, bit 1 = locked
-LOCKED_CLOSED = "11"
-UNLOCKED_CLOSED = "10"
+# minigw_lock_status is hex: bit 16 = door closed, bit 1 = locked. Real values seen:
+# "15" locked, "14"/"10" unlocked (door closed)
+LOCKED_CLOSED = "15"
+UNLOCKED_CLOSED = "14"
+
+# Yale session token carried in every status response - must never reach the log
+STATUS_TOKEN = "SECRET-SESSION-TOKEN"
 
 LOCK_ENTITY = "lock.ytterdor"
 DOOR_ENTITY = "binary_sensor.ytterdor"
@@ -60,19 +64,45 @@ LOG_BURST = [
 ] + LOG_BASELINE
 
 
-def status_response(lock_status=LOCKED_CLOSED):
+def latest_event(report_id, code="1802", time="1791720851"):
+    """Yale's newest event, as carried in every status response (report_event_latest)."""
+    return {
+        "utc_event_time": None,
+        "time": time,
+        "report_id": report_id,
+        "id": f"18{code[1:]}0201102",
+        "event_time": None,
+        "cid_code": code,
+    }
+
+
+LATEST_BASELINE = latest_event("1752573860")
+
+
+def status_response(lock_status=LOCKED_CLOSED, latest=LATEST_BASELINE):
+    """Shaped like a real panel/cycle response (trimmed)."""
     return {
         "result": True,
+        "code": "000",
+        "message": "OK!",
+        "token": STATUS_TOKEN,
         "data": {
+            "model": [{"area": "1", "mode": "disarm"}],
             "device_status": [
                 {
-                    "device_id": "RF:0123abcd",
                     "area": "1",
                     "no": "1",
+                    "address": "RF:0123abcd",
+                    "type": "device_type.door_lock",
                     "name": "Ytterdør",
+                    "status1": "device_status.lock" if lock_status == LOCKED_CLOSED else "device_status.unlock",
+                    "device_id": "RF:0123abcd",
                     "minigw_lock_status": lock_status,
                 }
-            ]
+            ],
+            "capture_latest": None,
+            "report_event_latest": latest,
+            "alarm_event_latest": None,
         },
     }
 
@@ -82,6 +112,7 @@ def mock_yale(
     *,
     token_status=200,
     lock_status=LOCKED_CLOSED,
+    latest=LATEST_BASELINE,
     log=LOG_BASELINE,
     expires_in=3600,
 ):
@@ -99,7 +130,7 @@ def mock_yale(
         aioclient_mock.post(TOKEN_URL, status=401, text=INVALID_GRANT)
     else:
         aioclient_mock.post(TOKEN_URL, status=token_status, text="Service Unavailable")
-    aioclient_mock.get(STATUS_URL, json=status_response(lock_status))
+    aioclient_mock.get(STATUS_URL, json=status_response(lock_status, latest))
     if log is not None:
         aioclient_mock.get(LOG_URL, json={"data": log})
     aioclient_mock.post(LOCK_URL, json={"code": "000"})
