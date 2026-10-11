@@ -3,7 +3,6 @@ import asyncio
 import socket
 from typing import Optional
 import aiohttp
-import async_timeout
 from datetime import datetime, timedelta
 import pickle
 import os
@@ -169,7 +168,7 @@ class YaleDoormanViaSmarthubApiClient:
         safe_headers = {k: v for k, v in headers.items() if k.lower() != "authorization"}
         _LOGGER.debug("%s request to %s (headers=%s)", method.upper(), url, safe_headers)
         try:
-            async with async_timeout.timeout(TIMEOUT):
+            async with asyncio.timeout(TIMEOUT):
                 if method == "get":
                     response = await self._session.get(url, headers=headers, auth=auth)
                 elif method == "put":
