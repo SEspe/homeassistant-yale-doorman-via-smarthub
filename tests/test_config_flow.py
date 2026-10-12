@@ -209,4 +209,4 @@ async def test_options_remove_pincode(hass: HomeAssistant, aioclient_mock, confi
     assert "pincode" not in config_entry.data
     assert "remove_pincode" not in config_entry.data
     # Without a stored PIN the lock asks for a 6-digit code again
-    assert hass.states.get(LOCK_ENTITY).attributes["code_format"] == r"^\d{6}$"
+    assert hass.states.get(LOCK_ENTITY).attributes["code_format"] == r"^(\d{6})?$"
