@@ -3,7 +3,7 @@
 All notable changes are documented here. Based on [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub)
 by Joakim Syk (version 0.0.8); entries below are the changes made since.
 
-## Unreleased
+## 0.0.22
 ### Changed
 - Without a stored PIN-code, **locking no longer needs a code** - Yale needs none to lock.
   Automations and voice assistants can lock without one. The lock dialog in the UI still
