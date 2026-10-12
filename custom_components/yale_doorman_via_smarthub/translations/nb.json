@@ -77,5 +77,10 @@
                 }
             }
         }
+    },
+    "exceptions": {
+        "code_required": {
+            "message": "Skriv inn den 6-sifrede koden for å låse opp døren (ingen PIN-kode er lagret)."
+        }
     }
 }

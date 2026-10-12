@@ -77,5 +77,10 @@
                 }
             }
         }
+    },
+    "exceptions": {
+        "code_required": {
+            "message": "Enter the 6-digit code to unlock the door (no PIN-code is stored)."
+        }
     }
 }

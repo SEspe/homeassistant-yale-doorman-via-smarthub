@@ -19,7 +19,7 @@ from .conftest import (
     setup_integration,
 )
 
-SIX_DIGITS = r"^\d{6}$"
+SIX_DIGITS_OR_NOTHING = r"^(\d{6})?$"
 
 
 def form_fields(call):
@@ -119,12 +119,16 @@ async def test_without_stored_pin_unlock_needs_six_digits(hass: HomeAssistant, a
     without_pincode(hass, config_entry)
     mock_yale(aioclient_mock)
     await setup_integration(hass, config_entry)
-    assert hass.states.get(LOCK_ENTITY).attributes["code_format"] == SIX_DIGITS
+    assert hass.states.get(LOCK_ENTITY).attributes["code_format"] == SIX_DIGITS_OR_NOTHING
 
-    for code in (None, "12", "abcdef"):
-        data = {"entity_id": LOCK_ENTITY} | ({"code": code} if code else {})
+    with pytest.raises(ServiceValidationError) as no_code:
+        await hass.services.async_call("lock", "unlock", {"entity_id": LOCK_ENTITY}, blocking=True)
+    assert no_code.value.translation_key == "code_required"
+    for code in ("12", "abcdef"):
         with pytest.raises(ServiceValidationError):
-            await hass.services.async_call("lock", "unlock", data, blocking=True)
+            await hass.services.async_call(
+                "lock", "unlock", {"entity_id": LOCK_ENTITY, "code": code}, blocking=True
+            )
     assert not calls_to(aioclient_mock, UNLOCK_URL)
 
     await hass.services.async_call(
@@ -134,24 +138,21 @@ async def test_without_stored_pin_unlock_needs_six_digits(hass: HomeAssistant, a
     assert hass.states.get(LOCK_ENTITY).state == "unlocked"
 
 
-async def test_without_stored_pin_lock_also_asks_for_code(hass: HomeAssistant, aioclient_mock, config_entry):
-    """HA applies code_format to locking too, although Yale needs no code to lock.
-
-    The typed code is only checked by HA, never sent to Yale.
-    """
+async def test_without_stored_pin_lock_needs_no_code(hass: HomeAssistant, aioclient_mock, config_entry):
+    """Yale needs no code to lock, so neither does HA - even when unlocking asks for one."""
     without_pincode(hass, config_entry)
     mock_yale(aioclient_mock, lock_status=UNLOCKED_CLOSED)
     await setup_integration(hass, config_entry)
 
-    with pytest.raises(ServiceValidationError):
-        await hass.services.async_call("lock", "lock", {"entity_id": LOCK_ENTITY}, blocking=True)
-    assert not calls_to(aioclient_mock, LOCK_URL)
+    await hass.services.async_call("lock", "lock", {"entity_id": LOCK_ENTITY}, blocking=True)
+    assert "pincode" not in form_fields(calls_to(aioclient_mock, LOCK_URL)[0])
+    assert hass.states.get(LOCK_ENTITY).state == "locked"
 
+    # The UI still shows a code field when locking; a typed code is accepted and ignored
     await hass.services.async_call(
         "lock", "lock", {"entity_id": LOCK_ENTITY, "code": "654321"}, blocking=True
     )
-    assert "pincode" not in form_fields(calls_to(aioclient_mock, LOCK_URL)[0])
-    assert hass.states.get(LOCK_ENTITY).state == "locked"
+    assert len(calls_to(aioclient_mock, LOCK_URL)) == 2
 
 
 @pytest.mark.parametrize(

@@ -1,4 +1,5 @@
 from homeassistant.components.lock import LockEntity
+from homeassistant.exceptions import ServiceValidationError
 
 from .const import (
     DOMAIN,
@@ -44,6 +45,11 @@ class YaleDoormanViaSmarthubLock(YaleDoormanViaSmarthubEntity, LockEntity):
     
     async def async_unlock(self, **kwargs):
         pincode = kwargs.get("code") or self.config_entry.data.get(CONF_PINCODE)
+        if not pincode:
+            # code_format lets an empty code through so locking needs none - unlocking does
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="code_required"
+            )
         success = await self.coordinator.api.async_unlock(self.unique_id,self._area,self._zone,pincode)
         if success:
             door_status = 14
@@ -94,7 +100,9 @@ class YaleDoormanViaSmarthubLock(YaleDoormanViaSmarthubEntity, LockEntity):
         except Exception as exception:
             pass
 
-        return r"^\d{6}$"
+        # Six digits or nothing: HA checks code_format for locking too, but Yale needs no
+        # code to lock. async_unlock refuses an empty code.
+        return r"^(\d{6})?$"
     
     @property
     def icon(self):

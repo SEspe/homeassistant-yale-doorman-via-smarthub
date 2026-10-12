@@ -77,5 +77,10 @@
                 }
             }
         }
+    },
+    "exceptions": {
+        "code_required": {
+            "message": "Ange den 6-siffriga koden för att låsa upp dörren (ingen PIN-kod är sparad)."
+        }
     }
 }

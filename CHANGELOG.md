@@ -3,6 +3,21 @@
 All notable changes are documented here. Based on [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub)
 by Joakim Syk (version 0.0.8); entries below are the changes made since.
 
+## Unreleased
+### Changed
+- Without a stored PIN-code, **locking no longer needs a code** - Yale needs none to lock.
+  Automations and voice assistants can lock without one. The lock dialog in the UI still
+  shows a code field when locking; just press Lock without typing anything. Unlocking still
+  needs the 6-digit code, with a clear message when it is missing.
+
+### Removed
+- An unused door sensor property (`disabled_by`) that Home Assistant never read.
+
+### Tests
+- Tests for the lock and door sensor, and a test run on the oldest supported Home
+  Assistant (2024.12.0) next to the latest, with coverage. Tests also fail when Home
+  Assistant logs that the integration uses something deprecated.
+
 ## 0.0.21
 ### Changed
 - Activity is detected from Yale's newest event (`report_event_latest`), which every
