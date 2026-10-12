@@ -1,2 +1,4 @@
 # The oldest Home Assistant this integration supports (hacs.json: 2024.12.0)
 pytest-homeassistant-custom-component==0.13.190
+# Same era as HA 2024.12 - newer pycares leaves a thread running that the old test plugin rejects
+pycares==4.5.0
