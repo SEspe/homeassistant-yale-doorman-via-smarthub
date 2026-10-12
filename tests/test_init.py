@@ -5,7 +5,7 @@ import warnings
 
 import aiohttp
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.const import STATE_OFF, STATE_UNKNOWN
+from homeassistant.const import STATE_OFF, STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 
 from custom_components.yale_doorman_via_smarthub.const import DOMAIN
@@ -71,3 +71,14 @@ async def test_unlock_and_lock(hass: HomeAssistant, aioclient_mock, config_entry
     await hass.services.async_call("lock", "lock", {"entity_id": LOCK_ENTITY}, blocking=True)
     assert len(calls_to(aioclient_mock, LOCK_URL)) == 1
     assert hass.states.get(LOCK_ENTITY).state == "locked"
+
+
+async def test_unload(hass: HomeAssistant, aioclient_mock, config_entry):
+    mock_yale(aioclient_mock)
+    await setup_integration(hass, config_entry)
+
+    assert await hass.config_entries.async_unload(config_entry.entry_id)
+    await hass.async_block_till_done()
+    assert config_entry.state is ConfigEntryState.NOT_LOADED
+    for entity_id in (LOCK_ENTITY, DOOR_ENTITY, ACTIVITY_ENTITY):
+        assert hass.states.get(entity_id).state == STATE_UNAVAILABLE

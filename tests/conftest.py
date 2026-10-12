@@ -115,9 +115,11 @@ def mock_yale(
     latest=LATEST_BASELINE,
     log=LOG_BASELINE,
     expires_in=3600,
+    command_code="000",
 ):
     """(Re)register the faked Yale API. Also clears the recorded calls.
 
+    command_code is Yale's answer to lock/unlock commands - "000" means OK.
     log=None leaves the event log unregistered, for tests that register pages themselves.
     """
     aioclient_mock.clear_requests()
@@ -133,8 +135,8 @@ def mock_yale(
     aioclient_mock.get(STATUS_URL, json=status_response(lock_status, latest))
     if log is not None:
         aioclient_mock.get(LOG_URL, json={"data": log})
-    aioclient_mock.post(LOCK_URL, json={"code": "000"})
-    aioclient_mock.post(UNLOCK_URL, json={"code": "000"})
+    aioclient_mock.post(LOCK_URL, json={"code": command_code})
+    aioclient_mock.post(UNLOCK_URL, json={"code": command_code})
 
 
 def calls_to(aioclient_mock, url):
@@ -157,6 +159,27 @@ async def setup_integration(hass: HomeAssistant, entry: MockConfigEntry) -> bool
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
     yield
+
+
+@pytest.fixture(autouse=True)
+def fail_on_home_assistant_deprecation_reports(caplog):
+    """Fail when HA reports that this integration uses something that will stop working.
+
+    HA only logs these ("Detected that custom integration ... will stop working in
+    Home Assistant 2026.x", deprecated constants, blocking calls) - it doesn't raise,
+    so without this check they would pass unnoticed.
+    """
+    yield
+    reports = [
+        record.getMessage()
+        for record in caplog.get_records("call")
+        if DOMAIN in record.getMessage()
+        and any(
+            word in record.getMessage().lower()
+            for word in ("deprecat", "stop working", "will be removed", "detected")
+        )
+    ]
+    assert not reports, reports
 
 
 @pytest.fixture(autouse=True)
