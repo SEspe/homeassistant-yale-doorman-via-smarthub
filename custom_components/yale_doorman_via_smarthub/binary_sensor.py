@@ -1,10 +1,8 @@
 from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.helpers.entity_registry import RegistryEntryDisabler
 
 from .const import (
     BINARY_SENSOR_DEVICE_CLASS,
     DOMAIN,
-    CONF_ENABLE_BINARY_SENSOR,
     BITWISE_LOCKED,
     BITWISE_CLOSED
 )
@@ -31,12 +29,6 @@ class YaleDoormanViaSmarthubBinarySensor(YaleDoormanViaSmarthubEntity, BinarySen
     def __init__(self, coordinator, config_entry, idx):
         super().__init__(coordinator, config_entry)
         self.idx = idx
-    
-    @property
-    def disabled_by(self):
-        if self.config_entry.data.get(CONF_ENABLE_BINARY_SENSOR, True):
-            return None
-        return RegistryEntryDisabler.INTEGRATION
     
     @property
     def device_class(self):
