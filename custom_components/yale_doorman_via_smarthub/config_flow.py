@@ -40,7 +40,6 @@ async def _async_check_login(hass, username, password):
 class YaleDoormanViaSmarthubFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
     
     def __init__(self):
         self._errors = {}
