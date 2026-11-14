@@ -3,6 +3,11 @@
 All notable changes are documented here. Based on [jockesyk/homeassistant-yale-doorman-via-smarthub](https://github.com/jockesyk/homeassistant-yale-doorman-via-smarthub)
 by Joakim Syk (version 0.0.8); entries below are the changes made since.
 
+## 0.0.23
+### Removed
+- The deprecated `CONN_CLASS_CLOUD_POLL` constant, which Home Assistant warned about in the
+  log. `iot_class` in `manifest.json` already gives the same information.
+
 ## 0.0.22
 ### Changed
 - Without a stored PIN-code, **locking no longer needs a code** - Yale needs none to lock.
